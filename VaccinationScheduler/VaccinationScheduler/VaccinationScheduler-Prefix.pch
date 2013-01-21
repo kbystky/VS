@@ -1,0 +1,22 @@
+//
+// Prefix header for all source files of the 'VaccinationScheduler' target in the 'VaccinationScheduler' project
+//
+
+#import <Availability.h>
+
+#ifndef __IPHONE_4_0
+#warning "This project uses features only available in iOS SDK 4.0 and later."
+#endif
+
+#ifdef __OBJC__
+    #import <UIKit/UIKit.h>
+    #import <Foundation/Foundation.h>
+#endif
+
+#define FUNK() NSLog(@"%s",__PRETTY_FUNCTION__)
+#define LINE() NSLog(@"%d",__LINE__)
+
+//SCREEN height 480
+#define SCREEN_HEIGHT ([UIScreen mainScreen].bounds.size.height)
+//SCREEN width 320
+#define SCREEN_WIDTH ([UIScreen mainScreen].bounds.size.width)
