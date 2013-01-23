@@ -14,12 +14,13 @@
 #import "NotificationSettingViewController.h"
 #import "AccountSettingCell.h"
 #import "LocalNotificationManager.h"
-
-enum{
-    SECTION_ACCOUNT,
+#import "StringConst.h"
+#import "AccountInfoDto.h"
+typedef enum{
+    SECTION_ACCOUNT=1,
     SECTION_GCAL_SYNC,
     SECTION_NOTIFICATION
-};
+}TypeOfSection;
 
 #define SettingAccountCell @"accountCell"
 
@@ -127,8 +128,13 @@ enum{
     
     if(indexPath.section == SECTION_ACCOUNT){
         AccountSettingCell *acCell = [[AccountSettingCell alloc]init];
+        //del
         NSDictionary *account = [accountDataSource objectAtIndex:indexPath.row];
-        acCell.textLabel.text = [account objectForKey:[UserDefaultsManager accountNameKey]];
+        acCell.textLabel.text = [account objectForKey:KEY_NAME];
+
+        AccountInfoDto *dto = [accountDataSource objectAtIndex:indexPath.row];
+        acCell.textLabel.text = dto.name;
+
         return acCell;
     }
     
@@ -152,15 +158,18 @@ enum{
 {
     if(indexPath.section == SECTION_ACCOUNT){
         //アカウント編集
-        NSDictionary *account = [accountDataSource objectAtIndex:indexPath.row];
-        for(NSString *key in [account allKeys]){
-            NSLog(@"key %@ obj %@",key,[account objectForKey:key]);
-        }
-        
-        AccountViewController *accountViewController = 
+//        NSDictionary *account = [accountDataSource objectAtIndex:indexPath.row];
+//        for(NSString *key in [account allKeys]){
+//            NSLog(@"key %@ obj %@",key,[account objectForKey:key]);
+//        }
+//        
+
+        AccountInfoDto *dto = [accountDataSource objectAtIndex:indexPath.row];
+
+        AccountViewController *accountViewController =
         [[AccountViewController alloc]initWithViewControllerType:LIST_VC 
                                                         editType:EDITTYPE_EDIT
-                                                     accountInfo:account];
+                                                     accountInfo:dto];
         accountViewController.delegate = self;
         [self.navigationController pushViewController:accountViewController animated:YES];
     }

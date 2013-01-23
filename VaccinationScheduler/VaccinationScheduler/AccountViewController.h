@@ -7,19 +7,22 @@
 //
 
 #import <UIKit/UIKit.h>
-enum{
-    LIST_VC
-}previousVCType;
-enum{
-    EDITTYPE_CREATE,
+typedef enum{
+    LIST_VC=1
+}PreviousVCType;
+typedef enum{
+    EDITTYPE_CREATE=1,
     EDITTYPE_EDIT
-}editType;
+}EditType;
 
 @protocol accountViewControllerDelegate;
+@class AccountInfoDto;
 @interface AccountViewController : UIViewController<UITextFieldDelegate,UIActionSheetDelegate,UIAlertViewDelegate>
 
 -(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountId:(NSInteger)accountId;
--(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountInfo:(NSDictionary *)accountInfo;
+//-(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountInfo:(NSDictionary *)accountInfo;
+-(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountInfo:(AccountInfoDto *)accountInfo;
+
 @property(weak,nonatomic)id delegate;
 @end
 

@@ -7,13 +7,15 @@
 //
 #import "LocalNotificationManager.h"
 #import "UserDefaultsManager.h"
+#import "StringConst.h"
+#import "DateFormatter.h"
 @implementation LocalNotificationManager
 
 -(void)createNotificationWithRecordDate:(NSString *)recDay accountId:(NSInteger)accountId{
     FUNK();
 
     //プレゼン用 FIX
-    //       NSDate *declarationDay = [self dateFormmatWithString:recDay];
+//    NSDate *declarationDay =[DateFormatter dateFormatWithString:recDay];
     NSDate *declarationDay  = [NSDate date];
     
     // アラート通知する日時
@@ -33,7 +35,7 @@
     UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
     NSDictionary *account = [manager accountWithId:accountId];
     
-    [localNotification setAlertBody:[NSString stringWithFormat:@"%@ちゃんの予防接種の\n予定日が近づいています",[account objectForKey:[UserDefaultsManager accountNameKey]]]];
+    [localNotification setAlertBody:[NSString stringWithFormat:@"%@ちゃんの予防接種の\n予定日が近づいています",[account objectForKey:KEY_NAME]]];
     // キーの設定
     NSDictionary *vInfo = [NSDictionary dictionaryWithObjects:[NSArray arrayWithObjects:[NSNumber numberWithInt:12],[NSNumber numberWithInt:2],nil] 
                                                       forKeys:[NSArray arrayWithObjects:@"id",@"times",nil]];
@@ -150,7 +152,7 @@
     
 }
 
--(NSDate *)dateFormmatWithString:(NSString *)string
+-(NSDate *)dateFormatWithString:(NSString *)string
 {
     NSDateFormatter* df = [[NSDateFormatter alloc] init];
     [df setDateFormat:@"yyyy/MM/dd"];

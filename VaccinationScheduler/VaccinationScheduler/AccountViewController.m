@@ -10,15 +10,19 @@
 #import "UserDefaultsManager.h"
 #import "AlertBuilder.h"
 #import "AccountAppointmentDao.h"
-
+#import "StringConst.h"
+#import "DateFormatter.h"
+#import "AccountInfoDto.h"
 @interface AccountViewController ()
 {
     NSInteger selectedAccountId;
     NSString *selectedAccountName;
+    UserDefaultsManager *manager;
 }
 @property(nonatomic)NSInteger previousViewControllerType;
 @property(nonatomic)NSInteger editType;
-@property(strong,nonatomic)NSDictionary *accountInfo;
+//@property(strong,nonatomic)NSDictionary *accountInfo;
+@property(strong,nonatomic)AccountInfoDto *accountInfoDto;
 @property (strong, nonatomic) IBOutlet UILabel *nameText;
 @property (strong, nonatomic) IBOutlet UILabel *birthDayText;
 @property (strong, nonatomic) IBOutlet UITextField *nameTextFiled;
@@ -27,13 +31,14 @@
 
 @property(strong, nonatomic) UIActionSheet *pickerViewPopup;
 @property(strong, nonatomic) UIDatePicker *datePicker;
+
 @end
 
 @implementation AccountViewController
 //public
 @synthesize delegate = _delegate;
 //private
-@synthesize accountInfo = _accountInfo;
+@synthesize accountInfoDto = _accountInfoDto;
 @synthesize previousViewControllerType = _previousViewControllerType;
 @synthesize editType = _editType;
 @synthesize nameText = _nameText;
@@ -49,18 +54,20 @@
 -(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountId:(NSInteger)accountId{
     self = [super init];
     if(self){
+        manager = [[UserDefaultsManager alloc]init];
         self.previousViewControllerType =vcType;
         self.editType = editType;
         selectedAccountId = accountId;
     }
     return self;
 }
--(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountInfo:(NSDictionary *)accountInfo{
+-(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountInfo:(AccountInfoDto *)accountInfo{
     self = [super init];
     if(self){
+        manager = [[UserDefaultsManager alloc]init];
         self.previousViewControllerType =vcType;
         self.editType = editType;
-        self.accountInfo = accountInfo;
+        self.accountInfoDto = accountInfo;
     }
     return self;
 }
@@ -103,20 +110,25 @@
         UIAlertView *alert = [AlertBuilder createAlertWithType:ALERTTYPE_DEMAND_FILLACCOUNTINFO];
         [alert show];
         return;
-    } 
+    }
     
     //新規作成
-    UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
+    
     if(self.editType == EDITTYPE_CREATE){
-        [manager createAccountWithName:self.nameTextFiled.text 
-                              birthDay:self.birthDayTextField.text];
+        //del
+        //        [manager createAccountWithName:self.nameTextFiled.text
+        //                              birthDay:self.birthDayTextField.text];
+        
+        AccountInfoDto *dto = [[AccountInfoDto alloc]initWithAccountId:0 name:self.nameTextFiled.text birthDay:self.birthDayTextField.text];
+        [manager saveAccount:dto];
     }else{
-        //編集
-        NSArray *obj = [NSArray arrayWithObjects:[self.accountInfo objectForKey:[UserDefaultsManager accountIdKey]],self.nameTextFiled.text,self.birthDayTextField.text, nil];
-        NSArray *key = [NSArray arrayWithObjects:[UserDefaultsManager accountIdKey], [UserDefaultsManager accountNameKey],[UserDefaultsManager accountBirthdayKey],nil];
-        NSDictionary *info = [NSDictionary dictionaryWithObjects:obj
-                                                         forKeys:key];
-        [manager saveAccountWithAccountInfo:info];
+        //        //編集
+        //        NSArray *obj = [NSArray arrayWithObjects:[NSNumber numberWithInt:self.accountInfo.accountId],self.nameTextFiled.text,self.birthDayTextField.text, nil];
+        //        NSArray *key = [NSArray arrayWithObjects:KEY_ID, KEY_NAME,KEY_BIRTHDAY,nil];
+        //        NSDictionary *info = [NSDictionary dictionaryWithObjects:obj
+        //                                                         forKeys:key];
+        //        [manager saveAccountWithAccountInfo:info];
+        
     }
     //delegateメソッドを呼ぶ
     [self.delegate dismissAccountViewController:self];
@@ -138,18 +150,18 @@
 
 
 -(void)showPicker {
-    self.pickerViewPopup = [[UIActionSheet alloc] initWithTitle:nil 
-                                                       delegate:self 
-                                              cancelButtonTitle:nil 
+    self.pickerViewPopup = [[UIActionSheet alloc] initWithTitle:nil
+                                                       delegate:self
+                                              cancelButtonTitle:nil
                                          destructiveButtonTitle:nil
                                               otherButtonTitles:nil];
     // Add the picker
     self.datePicker = [[UIDatePicker alloc] initWithFrame:CGRectMake(0,44,0,0)];
-    self.datePicker.datePickerMode = UIDatePickerModeDate;    
+    self.datePicker.datePickerMode = UIDatePickerModeDate;
     
     //既に誕生日入力済みの場合はピッカーで選択しておく
     if(self.birthDayTextField.text.length != 0){
-        self.datePicker.date = [self dateFormmatWithString:self.birthDayTextField.text];    
+        self.datePicker.date = [DateFormatter dateFormatWithString:self.birthDayTextField.text];
     }
     
     UIToolbar *pickerToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
@@ -160,9 +172,9 @@
     UIBarButtonItem *flexSpace = [[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:self action:nil];
     [barItems addObject:flexSpace];
     
-    UIBarButtonItem *doneBtn = [[UIBarButtonItem alloc]initWithTitle:@"完了" 
-                                                               style:UIBarButtonItemStyleBordered 
-                                                              target:self 
+    UIBarButtonItem *doneBtn = [[UIBarButtonItem alloc]initWithTitle:@"完了"
+                                                               style:UIBarButtonItemStyleBordered
+                                                              target:self
                                                               action:@selector(closePicker:)];
     [barItems addObject:doneBtn];
     [pickerToolbar setItems:barItems animated:YES];
@@ -174,7 +186,7 @@
 }
 
 -(BOOL)closePicker:(id)sender {
-    self.birthDayTextField.text = [self dateFormmatWithDate:self.datePicker.date];
+    self.birthDayTextField.text = [DateFormatter dateFormatWithDate:self.datePicker.date];
     [self.pickerViewPopup dismissWithClickedButtonIndex:0 animated:YES];
     return YES;
 }
@@ -200,37 +212,27 @@
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     if(alertView.tag == ALERTTYPE_CHECK_DELETE && buttonIndex == BUTTON_INDEX_OK){
         //アカウント削除
-        [[[UserDefaultsManager alloc]init] removeAccountWithAccountInfo:self.accountInfo];
-        AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
+        [manager removeAccount:self.accountInfoDto];
         
-        NSDictionary *account  =      [self.accountInfo objectForKey:self.nameTextFiled.text] ;
-       NSInteger accountId = [[account objectForKey:[UserDefaultsManager accountIdKey]] intValue];
-        [dao deleteWithAccountId:accountId];
-//[[UserDefaultsManager alloc]init] accountWithName:[self.accountInfo objectForKey:self.nameTextFiled.text] objectForKey:[UserDefaultsManager accountIdKey]intValue]
-         //delegateメソッドを呼ぶ
+        AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
+        //
+        //        NSDictionary *account  =      [self.accountInfoDto objectForKey:self.nameTextFiled.text] ;
+        //        NSInteger accountId = [[account objectForKey:KEY_ID] intValue];
+        //        [dao deleteWithAccountId:accountId];
+        
+        [dao deleteWithAccountId:self.accountInfoDto.accountId];
+        
+        //[[UserDefaultsManager alloc]init] accountWithName:[self.accountInfo objectForKey:self.nameTextFiled.text] objectForKey:[UserDefaultsManager KEY_ID_INT]intValue]
+        //delegateメソッドを呼ぶ
         [self.delegate dismissAccountViewController:self];
     }
 }
 
 #pragma mark ************  other *************
 -(void)setParamToTextFiled{
-    self.nameTextFiled.text = [self.accountInfo objectForKey:[UserDefaultsManager accountNameKey]];
-    self.birthDayTextField.text = [self.accountInfo objectForKey:[UserDefaultsManager accountBirthdayKey]];
+    //    self.nameTextFiled.text = [self.accountInfo objectForKey:KEY_NAME];
+    //    self.birthDayTextField.text = [self.accountInfo objectForKey:KEY_BIRTHDAY];
+    self.nameTextFiled.text = self.accountInfoDto.name;
+    self.birthDayTextField.text =self.accountInfoDto.birthDay;
 }
-
--(NSString *)dateFormmatWithDate:(NSDate *)date
-{
-    NSDateFormatter *df = [[NSDateFormatter alloc]init];
-    df.dateFormat = @"yyyy/MM/dd";
-    return [df stringFromDate:date];  
-}
-
--(NSDate *)dateFormmatWithString:(NSString *)string
-{
-    NSDateFormatter* df = [[NSDateFormatter alloc] init];
-    [df setDateFormat:@"yyyy/MM/dd"];
-    return [df dateFromString:string];
-}
-
-
 @end

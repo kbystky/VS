@@ -21,6 +21,8 @@
 		553BF8151681830000BD3A71 /* GCalSyncViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 553BF8131681830000BD3A71 /* GCalSyncViewController.xib */; };
 		553BF819168183FB00BD3A71 /* NotificationSettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 553BF817168183FB00BD3A71 /* NotificationSettingViewController.m */; };
 		553BF81A168183FB00BD3A71 /* NotificationSettingViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 553BF818168183FB00BD3A71 /* NotificationSettingViewController.xib */; };
+		555E61ED16AFA95B0022F429 /* StringConst.m in Sources */ = {isa = PBXBuildFile; fileRef = 555E61EC16AFA95B0022F429 /* StringConst.m */; };
+		555E61F216AFB2710022F429 /* DateFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 555E61F116AFB2710022F429 /* DateFormatter.m */; };
 		55820C7816ACCFC100CD1A50 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 55820C7716ACCFC100CD1A50 /* Default-568h@2x.png */; };
 		55DD2F6A167EF08C0008F374 /* AccountViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 55DD2F68167EF08C0008F374 /* AccountViewController.m */; };
 		55DD2F6B167EF08C0008F374 /* AccountViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 55DD2F69167EF08C0008F374 /* AccountViewController.xib */; };
@@ -445,6 +447,10 @@
 		553BF816168183FB00BD3A71 /* NotificationSettingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotificationSettingViewController.h; sourceTree = "<group>"; };
 		553BF817168183FB00BD3A71 /* NotificationSettingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NotificationSettingViewController.m; sourceTree = "<group>"; };
 		553BF818168183FB00BD3A71 /* NotificationSettingViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = NotificationSettingViewController.xib; sourceTree = "<group>"; };
+		555E61EB16AFA95B0022F429 /* StringConst.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringConst.h; sourceTree = "<group>"; };
+		555E61EC16AFA95B0022F429 /* StringConst.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = StringConst.m; sourceTree = "<group>"; };
+		555E61F016AFB2710022F429 /* DateFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DateFormatter.h; sourceTree = "<group>"; };
+		555E61F116AFB2710022F429 /* DateFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DateFormatter.m; sourceTree = "<group>"; };
 		55820C7716ACCFC100CD1A50 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		55DD2F67167EF08C0008F374 /* AccountViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AccountViewController.h; sourceTree = "<group>"; };
 		55DD2F68167EF08C0008F374 /* AccountViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AccountViewController.m; sourceTree = "<group>"; };
@@ -546,7 +552,7 @@
 		550A68371681ACE500EC0031 /* Controller */ = {
 			isa = PBXGroup;
 			children = (
-				55F8E0F4168017DC003C71E4 /* Logic */,
+				B02C972E166BA181006F6893 /* ViewController */,
 				B0F4B65E167DA3AA00E35CD3 /* Manager */,
 			);
 			name = Controller;
@@ -877,6 +883,24 @@
 			path = ../Headers;
 			sourceTree = "<group>";
 		};
+		555E61EE16AFB0CB0022F429 /* Const */ = {
+			isa = PBXGroup;
+			children = (
+				555E61EB16AFA95B0022F429 /* StringConst.h */,
+				555E61EC16AFA95B0022F429 /* StringConst.m */,
+			);
+			name = Const;
+			sourceTree = "<group>";
+		};
+		555E61EF16AFB2420022F429 /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				555E61F016AFB2710022F429 /* DateFormatter.h */,
+				555E61F116AFB2710022F429 /* DateFormatter.m */,
+			);
+			name = Util;
+			sourceTree = "<group>";
+		};
 		55DD2F70167EF3DB0008F374 /* Dao */ = {
 			isa = PBXGroup;
 			children = (
@@ -904,6 +928,7 @@
 		55DD2F7E167EF94F0008F374 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				55F8E0F4168017DC003C71E4 /* Logic */,
 				55DD2F70167EF3DB0008F374 /* Dao */,
 				55DD2F74167EF40D0008F374 /* Dto */,
 			);
@@ -935,7 +960,6 @@
 			children = (
 				55820C7716ACCFC100CD1A50 /* Default-568h@2x.png */,
 				B0AF115F169F1E1600E45EE0 /* GData.xcodeproj */,
-				5513DC731682D58F00E0D745 /* QuartzCore.framework */,
 				B0D7457716827061001C4D59 /* CalendarUnitTest */,
 				B02C970C166BA12E006F6893 /* Frameworks */,
 				B0F4B64A167DA2B000E35CD3 /* lib */,
@@ -957,6 +981,7 @@
 		B02C970C166BA12E006F6893 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5513DC731682D58F00E0D745 /* QuartzCore.framework */,
 				5513DB291682C17300E0D745 /* SystemConfiguration.framework */,
 				5513DB271682C16A00E0D745 /* Security.framework */,
 				B0D7458516827080001C4D59 /* SenTestingKit.framework */,
@@ -971,19 +996,18 @@
 		B02C9713166BA12E006F6893 /* VaccinationScheduler */ = {
 			isa = PBXGroup;
 			children = (
-				5513DC6D1682D3B200E0D745 /* SVProgressHUD.bundle */,
-				5513DC6E1682D3B200E0D745 /* SVProgressHUD.h */,
-				5513DC6F1682D3B200E0D745 /* SVProgressHUD.m */,
-				5513DB2C1682C2A200E0D745 /* Headers */,
-				553BF80D16814B5A00BD3A71 /* AccountSettingCell.h */,
-				553BF80E16814B5A00BD3A71 /* AccountSettingCell.m */,
 				B02C971C166BA12E006F6893 /* AppDelegate.h */,
 				B02C971D166BA12E006F6893 /* AppDelegate.m */,
 				55DD2F83167F06AD0008F374 /* Builder */,
+				555E61EE16AFB0CB0022F429 /* Const */,
 				550A68371681ACE500EC0031 /* Controller */,
+				5513DB2C1682C2A200E0D745 /* Headers */,
 				55DD2F7E167EF94F0008F374 /* Model */,
+				5513DC6D1682D3B200E0D745 /* SVProgressHUD.bundle */,
+				5513DC6E1682D3B200E0D745 /* SVProgressHUD.h */,
+				5513DC6F1682D3B200E0D745 /* SVProgressHUD.m */,
+				555E61EF16AFB2420022F429 /* Util */,
 				B0F4B65F167DA3CD00E35CD3 /* View */,
-				B02C972E166BA181006F6893 /* ViewController */,
 			);
 			path = VaccinationScheduler;
 			sourceTree = "<group>";
@@ -1103,6 +1127,8 @@
 		B0F4B65F167DA3CD00E35CD3 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				553BF80D16814B5A00BD3A71 /* AccountSettingCell.h */,
+				553BF80E16814B5A00BD3A71 /* AccountSettingCell.m */,
 				B02C9733166BAD13006F6893 /* CalendarView.h */,
 				B02C9734166BAD13006F6893 /* CalendarView.m */,
 				B02C9735166BAD13006F6893 /* CalendarView.xib */,
@@ -1298,6 +1324,8 @@
 				B0D7455C16824070001C4D59 /* AccountAppointmentDao.m in Sources */,
 				B0D7455F16824086001C4D59 /* AccountAppointmentDto.m in Sources */,
 				5513DC6C1682C36600E0D745 /* SyncGoogleCalendarManager.m in Sources */,
+				555E61ED16AFA95B0022F429 /* StringConst.m in Sources */,
+				555E61F216AFB2710022F429 /* DateFormatter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

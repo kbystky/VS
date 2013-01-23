@@ -78,18 +78,18 @@
     
     NSDateComponents *weekDayCom = 
     [cal components:NSWeekdayCalendarUnit 
-           fromDate:[self LastDayOfMonthWithMonth:m inYear:y]];
+           fromDate:[self lastDayOfMonthWithMonth:m inYear:y]];
     
     NSLog(@"%d年%d月の月末の曜日は：%d",y,m,[weekDayCom weekday]);
     return [weekDayCom weekday];
 }
 
 //月末のNSDateを取得する
--(NSDate *)LastDayOfMonthWithMonth:(NSInteger)m inYear:(NSInteger)y{
+-(NSDate *)lastDayOfMonthWithMonth:(NSInteger)m inYear:(NSInteger)y{
     FUNK();
     
     NSDateComponents *com = [[NSDateComponents alloc]init];
-    [com setDay:[self NumberOfDayOfMonth:m inYear:y]];
+    [com setDay:[self numberOfDayOfMonth:m inYear:y]];
     [com setYear:y];
     [com setMonth:m];
     return  [cal dateFromComponents:com];
@@ -97,7 +97,7 @@
 
 
 //該当月の日数を求める
--(NSInteger)NumberOfDayOfMonth:(NSInteger)m inYear:(NSInteger)y{
+-(NSInteger)numberOfDayOfMonth:(NSInteger)m inYear:(NSInteger)y{
     FUNK();
     
     NSDateComponents *com = [[NSDateComponents alloc]init];
@@ -143,7 +143,7 @@
         colum++;
     }        
     
-    int dayOfMonth= [self NumberOfDayOfMonth:month inYear:year];
+    int dayOfMonth= [self numberOfDayOfMonth:month inYear:year];
     for(NSInteger i = 1;i <dayOfMonth;i++){
         if(colum == 7){
             colum =0;
@@ -177,7 +177,7 @@
         colum++;
     }        
     //今月の表示
-    int dayOfMonth= [self NumberOfDayOfMonth:month inYear:year];
+    int dayOfMonth= [self numberOfDayOfMonth:month inYear:year];
     for(NSInteger i = 1;i <=dayOfMonth;i++){
         [dayOfThisMonth addObject:[NSNumber numberWithInt:i]];
         if(colum == 7){
@@ -256,6 +256,7 @@
             
     }
 }
+
 -(BOOL)isTapSelectedDayWithTapDayInfo:(NSDictionary *)tapDayInfo selectedDayInfo:(NSDictionary *)selectedDayInfo{
     BOOL result = YES;
     

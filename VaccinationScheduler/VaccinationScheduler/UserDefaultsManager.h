@@ -7,23 +7,21 @@
 //
 
 #import <Foundation/Foundation.h>
-
+@class AccountInfoDto;
 @interface UserDefaultsManager : NSObject
 -(id)init;
-+(NSString *)accountIdKey;
-+(NSString *)accountNameKey;
-+(NSString *)accountBirthdayKey;
-+(NSString *)accountNumberPrefix;
-+(NSString *)googleAccountIdKey;
-+(NSString *)googleAccountPassKey;
 
 
--(BOOL)createAccountWithName:(NSString *)name birthDay:(NSString *)birthDay;
--(BOOL)saveAccountWithAccountInfo:(NSDictionary *)info;
--(BOOL)removeAccountWithAccountInfo:(NSDictionary *)info;
+-(void)createAccountWithName:(NSString *)name birthDay:(NSString *)birthDay;
+-(void)saveAccountWithAccountInfo:(NSDictionary *)info;
+-(void)removeAccountWithAccountInfo:(NSDictionary *)info;
+
+-(void)saveAccount:(AccountInfoDto *)accountInfoDto;
+-(void)removeAccount:(AccountInfoDto *)accountInfoDto;
+
 -(NSArray *)allAccount;
--(NSDictionary *)accountWithId:(NSInteger)accountId;
--(NSDictionary *)accountWithName:(NSString *)accountName;
+-(AccountInfoDto *)accountWithId:(NSInteger)accountId;
+-(AccountInfoDto *)accountWithName:(NSString *)accountName;
 -(BOOL)accountIsExist;
 -(BOOL)accountCanCreate;
 -(NSInteger)numberOfAccount;

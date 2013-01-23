@@ -11,7 +11,7 @@
 #import "VaccinationDao.h"
 #import "AlertBuilder.h"
 #import "LocalNotificationManager.h"
-
+#import "DateFormatter.h"
 @interface DetailListViewController ()
 {
     AccountAppointmentDto *appointmentDto;
@@ -110,9 +110,8 @@
     self.datePicker = [[UIDatePicker alloc] initWithFrame:CGRectMake(0,44,0,0)];
     self.datePicker.datePickerMode = UIDatePickerModeDate;    
     
-    //既に誕生日入力済みの場合はピッカーで選択しておく
     if(self.appointmentDayTextField.text.length != 0){
-        self.datePicker.date = [self dateFormmatWithString:self.appointmentDayTextField.text];    
+        self.datePicker.date = [DateFormatter dateFormatWithString:self.appointmentDayTextField.text];
     }
     
     UIToolbar *pickerToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
@@ -137,23 +136,9 @@
 }
 
 -(BOOL)closePicker:(id)sender {
-    self.appointmentDayTextField.text = [self dateFormmatWithDate:self.datePicker.date];
+    self.appointmentDayTextField.text = [DateFormatter dateFormatWithDate:self.datePicker.date];
     [self.pickerViewPopup dismissWithClickedButtonIndex:0 animated:YES];
     return YES;
-}
-
--(NSString *)dateFormmatWithDate:(NSDate *)date
-{
-    NSDateFormatter *df = [[NSDateFormatter alloc]init];
-    df.dateFormat = @"yyyy/MM/dd";
-    return [df stringFromDate:date];  
-}
-
--(NSDate *)dateFormmatWithString:(NSString *)string
-{
-    NSDateFormatter* df = [[NSDateFormatter alloc] init];
-    [df setDateFormat:@"yyyy/MM/dd"];
-    return [df dateFromString:string];
 }
 
 #pragma mark ************  Delegate *************

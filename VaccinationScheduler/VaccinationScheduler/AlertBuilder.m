@@ -9,9 +9,9 @@
 #import "AlertBuilder.h"
 
 @implementation AlertBuilder
+
 +(UIAlertView*)createAlertWithType:(NSInteger)alertType{
     UIAlertView  *alert;
-    
     alert = [[UIAlertView alloc] initWithTitle:[self alertTitleWithAlertType:alertType]
                                        message:[self alertMessageWithAlertType:alertType]
                                       delegate:nil
@@ -76,25 +76,27 @@
 
 +(NSString *)alertOtherButtonTitleWithAlertType:(NSInteger)type{
     FUNK();
-    NSString *title=nil;
-    switch (type) {
-        case ALERTTYPE_CREATEACCOUNTFORCIBLY:
-            title = @"OK";
-            break;
-        case ALERTTYPE_DEMAND_DELETEACCOUNT:
-            title = @"OK";
-            break;
-        case ALERTTYPE_DEMAND_FILLACCOUNTINFO:
-            title = @"OK";
-            break;
-        case ALERTTYPE_CHECK_DELETE:
-            title = @"OK";
-            break;
-        case ALERTTYPE_DEMAND_FILLINFO:
-            title = @"OK";
-            break;
-            
-    }
-    return title; 
+return @"OK";
+    //    NSString *title=nil;
+//
+//    switch (type) {
+//        case ALERTTYPE_CREATEACCOUNTFORCIBLY:
+//            title = @"OK";
+//            break;
+//        case ALERTTYPE_DEMAND_DELETEACCOUNT:
+//            title = @"OK";
+//            break;
+//        case ALERTTYPE_DEMAND_FILLACCOUNTINFO:
+//            title = @"OK";
+//            break;
+//        case ALERTTYPE_CHECK_DELETE:
+//            title = @"OK";
+//            break;
+//        case ALERTTYPE_DEMAND_FILLINFO:
+//            title = @"OK";
+//            break;
+//    }
+//
+//    return title;
 }
 @end

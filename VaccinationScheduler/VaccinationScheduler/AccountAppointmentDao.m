@@ -12,13 +12,15 @@
 #import "FMDatabase.h"
 #import "DatabaseManager.h"
 #import "UserDefaultsManager.h"
+#import "StringConst.h"
+
 @implementation AccountAppointmentDao
 -(NSArray *)appointmentDtoWithAccountId:(NSInteger)accountid{
     NSMutableArray *appointment = [[NSMutableArray alloc]init];
     
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];
-    NSString *sql = [NSString stringWithFormat:@"SELECT appointment,times,isSynced FROM %@%d;",[UserDefaultsManager accountNumberPrefix],accountid];
+    NSString *sql = [NSString stringWithFormat:@"SELECT appointment,times,isSynced FROM %@%d;",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
     
     //データ取得
     FMResultSet *results = [db executeQuery:sql];
@@ -36,7 +38,7 @@
 -(NSInteger)timesWithAccountId:(NSInteger)accountid vaccinationName:(NSString *)name{
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];
-    NSString *sql = [NSString stringWithFormat:@"SELECT times FROM %@%d where appointment = ?;",[UserDefaultsManager accountNumberPrefix],accountid];
+    NSString *sql = [NSString stringWithFormat:@"SELECT times FROM %@%d where appointment = ?;",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
     NSInteger times;    
     //データ取得
     FMResultSet *results = [db executeQuery:sql,name];
@@ -51,7 +53,7 @@
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];
     
-    NSString  * sql = [NSString stringWithFormat:@"INSERT INTO %@%d (appointment,date,times,isSynced) VALUES (?,?,?,?);",[UserDefaultsManager accountNumberPrefix],accountid];
+    NSString  * sql = [NSString stringWithFormat:@"INSERT INTO %@%d (appointment,date,times,isSynced) VALUES (?,?,?,?);",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
     
     BOOL result = [db executeUpdate:sql,name,date,[NSNumber numberWithInt:times+1],[NSNumber numberWithBool:NO]];
     [db close];
@@ -61,7 +63,7 @@
 -(NSString *)dateWithAccountId:(NSInteger)accountid vaccinationName:(NSString *)name times:(NSInteger)times{
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];
-    NSString *sql = [NSString stringWithFormat:@"SELECT date FROM %@%d WHERE appointment = ?",[UserDefaultsManager accountNumberPrefix],accountid];
+    NSString *sql = [NSString stringWithFormat:@"SELECT date FROM %@%d WHERE appointment = ?",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
     //データ取得
     NSString *date;
     FMResultSet *results = [db executeQuery:sql,name];
@@ -77,7 +79,7 @@
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];
     BOOL result;
-    NSString  * sql = [NSString stringWithFormat:@"DELETE FROM %@%d",[UserDefaultsManager accountNumberPrefix],accountid];
+    NSString  * sql = [NSString stringWithFormat:@"DELETE FROM %@%d",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
     
     result = [db executeUpdate:sql];
     [db close];
@@ -91,7 +93,7 @@
     [db open];
     BOOL result;
     for(int i =1; i<4;i++){
-        NSString  * sql = [NSString stringWithFormat:@"DELETE FROM %@%d",[UserDefaultsManager accountNumberPrefix],i];
+        NSString  * sql = [NSString stringWithFormat:@"DELETE FROM %@%d",KEY_ACCOUNT_NUMBER_PREFIX,i];
         
         result = [db executeUpdate:sql];
     }

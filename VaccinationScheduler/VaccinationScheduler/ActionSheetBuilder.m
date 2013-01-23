@@ -8,6 +8,8 @@
 
 #import "ActionSheetBuilder.h"
 #import "UserDefaultsManager.h"
+#import "StringConst.h"
+#import "AccountInfoDto.h"
 @implementation ActionSheetBuilder
 
 +(UIActionSheet *)createActionSheet{
@@ -21,8 +23,8 @@
     [sheet addButtonWithTitle:@"アカウント追加"];
     int i;
     for(i = 0;i<accounts.count;i++){
-        NSDictionary *account = [accounts objectAtIndex:i];
-        [sheet addButtonWithTitle:[account objectForKey:[UserDefaultsManager accountNameKey]]];
+        AccountInfoDto *account = [accounts objectAtIndex:i];
+        [sheet addButtonWithTitle:account.name];
     }
     [sheet addButtonWithTitle:@"キャンセル"];
 //    sheet.destructiveButtonIndex = DESTRUCTIVEBUTTON_INDEX;

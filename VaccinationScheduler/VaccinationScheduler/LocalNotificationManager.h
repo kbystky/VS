@@ -5,11 +5,11 @@
 //  Created by 拓也 小林 on 12/12/04.
 //  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
 //
-enum{
-    NOTIFICATION_TIMING_TYPE_TODAY,
+typedef enum{
+    NOTIFICATION_TIMING_TYPE_TODAY=1,
     NOTIFICATION_TIMING_TYPE_PREVIOUSDAY,
     NOTIFICATION_TIMING_TYPE_FORPRESENTATION,
-};
+}TypeOfNotification;
 #import <Foundation/Foundation.h>
 
 @interface LocalNotificationManager : NSObject

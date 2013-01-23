@@ -7,12 +7,17 @@
 //
 
 #import <UIKit/UIKit.h>
-enum{
-    PRE=1,THIS=2,NEXT=3,
-};
-enum{
-    RETURN=1,SELECT=2,
-};
+typedef enum{
+
+    PRE=1,THIS,NEXT,
+
+}TypeOfMonth;
+
+typedef enum{
+
+    RETURN=1,SELECT,
+
+}ChangeBgColor;
 
 @interface CalendarView : UIView
 {

@@ -5,10 +5,11 @@
 //  Created by 拓也 小林 on 12/12/12.
 //  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
 //
-enum{
-    MAX_NUMBER_OF_ACCOUNT = 3
-};
+#define  MAX_NUMBER_OF_ACCOUNT 3
+
 #import "UserDefaultsManager.h"
+#import "StringConst.h"
+#import "AccountInfoDto.h"
 @interface UserDefaultsManager()
 {
     NSUserDefaults *defaults;
@@ -18,38 +19,9 @@ enum{
 @implementation UserDefaultsManager
 
 #pragma mark - ******  ******
-static  NSString *const KEY_ID_INT =@"id";
-static  NSString *const KEY_NAME_STR =@"name";
-static NSString *const KEY_BIRTHDAY_STR =@"birthday";
-
 NSString *const KEY_ACCOUNTS_MUDIC =@"accounts";
-static NSString *const KEY_ACCOUNT_NUMBER_PREFIX =@"account_";
+NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
 
-static  NSString *const KEY_GOOGLE_ID =@"google_id";
-static  NSString *const KEY_GOOGLE_PASS =@"google_password";
-
-static  NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
-
-
-+(NSString *)accountIdKey{
-    return KEY_ID_INT;
-}
-+(NSString *)accountNameKey{
-    return KEY_NAME_STR;
-}
-
-+(NSString *)accountBirthdayKey{
-    return KEY_BIRTHDAY_STR;
-}
-+(NSString *)accountNumberPrefix{
-    return KEY_ACCOUNT_NUMBER_PREFIX;
-}
-+(NSString *)googleAccountIdKey{
-    return KEY_GOOGLE_ID;
-}
-+(NSString *)googleAccountPassKey{
-    return KEY_GOOGLE_PASS;
-}
 #pragma mark - ****** initialize ******
 
 -(id)init
@@ -62,9 +34,65 @@ static  NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
 }
 
 #pragma mark - ******  ******
+-(void)saveAccount:(AccountInfoDto *)accountInfoDto
+{
+    FUNK();
+    if(accountInfoDto.accountId == 0){
+        [self createNewAccount:accountInfoDto];
+    }else{
+        [self editAccount:accountInfoDto];
+    }
+}
+
+-(void)removeAccount:(AccountInfoDto *)accountInfoDto
+{
+    
+}
+// データ新規作成
+-(void)createNewAccount:(AccountInfoDto *)accountInfoDto
+{
+    FUNK();    NSMutableDictionary *accounts;
+    NSInteger accountId = 1;
+    if(![self accountIsExist]){
+        //一度もアカウントが登録されて無いときにベースとなるdicを生成
+        accounts = [[NSMutableDictionary alloc]init];
+    }else{
+        accounts = [[defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC] mutableCopy];
+        //キャストじゃなくてmutablecopy
+        BOOL accountIdNotExist = YES;
+        for(int i = 1;i<=MAX_NUMBER_OF_ACCOUNT;i++){
+            for(NSString *key in [accounts allKeys]){
+                AccountInfoDto *dto = (AccountInfoDto *)[accounts objectForKey:key];
+                if(dto.accountId == i){
+                    accountIdNotExist = NO;
+                    break;
+                }
+            }
+            if(accountIdNotExist){
+                NSLog(@"new id %d",i);
+                accountId = i;
+                break;
+            }
+            accountIdNotExist = YES;
+        }
+    }
+    accountInfoDto.accountId = accountId;
+    
+    // archive
+    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:accountInfoDto];
+    [accounts setObject:data forKey:[KEY_ACCOUNT_NUMBER_PREFIX stringByAppendingFormat:@"%d",accountId]];
+    [defaults setObject:accounts forKey:KEY_ACCOUNTS_MUDIC];
+    [defaults synchronize];
+}
+// データ編集
+-(void)editAccount:(AccountInfoDto *)accountInfoDto
+{
+    
+}
+
 
 //アカウント生成
--(BOOL)createAccountWithName:(NSString *)name birthDay:(NSString *)birthDay{
+-(void)createAccountWithName:(NSString *)name birthDay:(NSString *)birthDay{
     NSMutableDictionary *accounts;
     NSInteger accountId = 1;
     if(![self accountIsExist]){
@@ -77,43 +105,38 @@ static  NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
         for(int i = 1;i<=MAX_NUMBER_OF_ACCOUNT;i++){
             for(NSString *key in [accounts allKeys]){
                 NSMutableDictionary *ac = [accounts objectForKey:key];
-                if([[ac objectForKey:KEY_ID_INT] intValue] == i){
+                if([[ac objectForKey:KEY_ID] intValue] == i){
                     accountIdNotExist = NO;
                     break;
                 }
             }
-            if(accountIdNotExist){       
+            if(accountIdNotExist){
                 NSLog(@"new id %d",i);
                 accountId = i;
                 break;
             }
             accountIdNotExist = YES;
         }
-    }   
-
-    NSArray *obj = [NSArray arrayWithObjects:[NSNumber numberWithInt:accountId],name,birthDay,nil]; 
-    NSArray *key = [NSArray arrayWithObjects:KEY_ID_INT,KEY_NAME_STR,KEY_BIRTHDAY_STR,nil]; 
+    }
+    
+    NSArray *obj = [NSArray arrayWithObjects:[NSNumber numberWithInt:accountId],name,birthDay,nil];
+    NSArray *key = [NSArray arrayWithObjects:KEY_ID,KEY_NAME,KEY_BIRTHDAY,nil];
     NSDictionary *account = [NSDictionary dictionaryWithObjects:obj forKeys:key];
     
     [accounts setObject:account forKey:[KEY_ACCOUNT_NUMBER_PREFIX stringByAppendingFormat:@"%d",accountId]];
     
     [defaults setObject:accounts forKey:KEY_ACCOUNTS_MUDIC];
-    NSLog(@"add  name:%@  birthday:%@  id:%d",name,birthDay,accountId);    
-    BOOL successful = [defaults synchronize];
-    if (successful) {
-        return YES;
-    }else{
-        return NO;
-    }   
+    NSLog(@"add  name:%@  birthday:%@  id:%d",name,birthDay,accountId);
+    [defaults synchronize];
 }
 
 //アカウント情報保存(編集)
--(BOOL)saveAccountWithAccountInfo:(NSDictionary *)info{
+-(void)saveAccountWithAccountInfo:(NSDictionary *)info{
     FUNK();
     //infoからname birthを抽出
-    NSInteger accountId = [[info objectForKey:KEY_ID_INT] intValue];
+    NSInteger accountId = [[info objectForKey:KEY_ID] intValue];
     //userdefaultからaccountsを抽出
-    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC]; 
+    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC];
     
     //nameが一致するaccountをaccountsから抽出、変更、(元々を削除？)
     NSMutableDictionary *newAccounts = [[NSMutableDictionary alloc]init];
@@ -122,29 +145,24 @@ static  NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
         //mutablecopyしないと２回目以降imutable accessで落ちる
         account = [[accounts objectForKey:key] mutableCopy];
         
-        if([[account objectForKey:KEY_ID_INT] intValue] == accountId ){
-            [account setObject:[info objectForKey:KEY_NAME_STR] forKey:KEY_NAME_STR];
-            [account setObject:[info objectForKey:KEY_BIRTHDAY_STR] forKey:KEY_BIRTHDAY_STR];
+        if([[account objectForKey:KEY_ID] intValue] == accountId ){
+            [account setObject:[info objectForKey:KEY_NAME] forKey:KEY_NAME];
+            [account setObject:[info objectForKey:KEY_BIRTHDAY] forKey:KEY_BIRTHDAY];
         }
-        [newAccounts setObject:account forKey:[KEY_ACCOUNT_NUMBER_PREFIX stringByAppendingFormat:@"%d",[[account objectForKey:KEY_ID_INT] intValue]]];
+        [newAccounts setObject:account forKey:[KEY_ACCOUNT_NUMBER_PREFIX stringByAppendingFormat:@"%d",[[account objectForKey:KEY_ID] intValue]]];
     }
     
     [defaults setObject:newAccounts forKey:KEY_ACCOUNTS_MUDIC];
-    BOOL successful = [defaults synchronize];
-    if (successful) {
-        return YES;
-    }else{
-        return NO;
-    }   
+    [defaults synchronize];
 }
 
 //アカウント削除
--(BOOL)removeAccountWithAccountInfo:(NSDictionary *)info{
+-(void)removeAccountWithAccountInfo:(NSDictionary *)info{
     FUNK();
     //infoからname birthを抽出
-    NSInteger accountId = [[info objectForKey:KEY_ID_INT] intValue];
+    NSInteger accountId = [[info objectForKey:KEY_ID] intValue];
     //userdefaultからaccountsを抽出
-    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC]; 
+    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC];
     
     //nameが一致するaccountをaccountsから抽出、変更、(元々を削除？)
     NSMutableDictionary *newAccounts = [[NSMutableDictionary alloc]init];
@@ -152,71 +170,85 @@ static  NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
     for( NSString *key in [accounts allKeys]){
         //mutablecopyしないと２回目以降imutable accessで落ちる
         account = [[accounts objectForKey:key] mutableCopy];
-        NSLog(@"acc id %d",[[account objectForKey:KEY_ID_INT] intValue]);
-        if([[account objectForKey:KEY_ID_INT] intValue] == accountId){
-            NSLog(@"remove");        
+        NSLog(@"acc id %d",[[account objectForKey:KEY_ID] intValue]);
+        if([[account objectForKey:KEY_ID] intValue] == accountId){
+            NSLog(@"remove");
             continue;
         }
-        [newAccounts setObject:account forKey:[KEY_ACCOUNT_NUMBER_PREFIX stringByAppendingFormat:@"%d",[[account objectForKey:KEY_ID_INT] intValue]]];
+        [newAccounts setObject:account forKey:[KEY_ACCOUNT_NUMBER_PREFIX stringByAppendingFormat:@"%d",[[account objectForKey:KEY_ID] intValue]]];
     }
     
     [defaults setObject:newAccounts forKey:KEY_ACCOUNTS_MUDIC];
-    BOOL successful = [defaults synchronize];
-    if (successful) {
-        return YES;
-    }else{
-        return NO;
-    }   
+    [defaults synchronize];
 }
 
 
 //アカウント情報保存(編集)
 -(NSArray *)allAccount{
-    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC]; 
+    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC];
     NSMutableArray *array = [[NSMutableArray alloc]init];
     NSArray *keys = [accounts allKeys];
     for(NSString *key in keys){
-        [array addObject:[accounts objectForKey:key]];
+        AccountInfoDto *dto = [NSKeyedUnarchiver unarchiveObjectWithData:[accounts objectForKey:key]];
+        [array addObject:dto];
     }
-    
+
     //idでソート
-    NSSortDescriptor *sortDispId = [[NSSortDescriptor alloc] initWithKey:@"id" ascending:YES];  
-    NSArray *sortDescArray = [NSArray arrayWithObjects:sortDispId, nil];  
+    NSSortDescriptor *sortDispId = [[NSSortDescriptor alloc] initWithKey:@"accountId" ascending:YES];
+    NSArray *sortDescArray = [NSArray arrayWithObjects:sortDispId, nil];
     array = [NSMutableArray arrayWithArray:[array sortedArrayUsingDescriptors:sortDescArray]];
-    
     return array;
 }
 
 //アカウント取得
--(NSDictionary *)accountWithId:(NSInteger)accountId
+-(AccountInfoDto *)accountWithId:(NSInteger)accountId
 {
     FUNK();
-    NSLog(@"id %d",accountId);
-    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC]; 
+    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC];
     NSArray *keys = [accounts allKeys];
-    NSDictionary *account;
     for(NSString *key in keys){
-        account = [accounts objectForKey:key];
-        if([[account objectForKey:KEY_ID_INT] intValue] == accountId){
-            return account;
+        AccountInfoDto *dto = [NSKeyedUnarchiver unarchiveObjectWithData:[accounts objectForKey:key]];
+
+        if(dto.accountId == accountId){
+            return dto;
         }
     }
     return nil;
 }
+//    NSMutableDictionary  *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC];
+//    NSArray *keys = [accounts allKeys];
+//    NSDictionary *account;
+//    for(NSString *key in keys){
+//        account = [accounts objectForKey:key];
+//        if([[account objectForKey:KEY_ID] intValue] == accountId){
+//            return account;
+//        }
+//    }
+//    return nil;
+//}
 
 //アカウント取得
--(NSDictionary *)accountWithName:(NSString *)accountName
+-(AccountInfoDto *)accountWithName:(NSString *)accountName
 {
     FUNK();
-    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC]; 
+    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC];
     NSArray *keys = [accounts allKeys];
-    NSDictionary *account;
     for(NSString *key in keys){
-        account = [accounts objectForKey:key];
-        if([[account objectForKey:KEY_NAME_STR] isEqualToString:accountName]){
-            return account;
+        AccountInfoDto *dto = [NSKeyedUnarchiver unarchiveObjectWithData:[accounts objectForKey:key]];
+        
+        if([dto.name isEqualToString:accountName]){
+            return dto;
         }
     }
+//    NSMutableDictionary *accounts = (NSMutableDictionary*) [defaults dictionaryForKey:KEY_ACCOUNTS_MUDIC];
+//    NSArray *keys = [accounts allKeys];
+//    NSDictionary *account;
+//    for(NSString *key in keys){
+//        account = [accounts objectForKey:key];
+//        if([[account objectForKey:KEY_NAME] isEqualToString:accountName]){
+//            return account;
+//        }
+//    }
     return nil;
 }
 //アカウントが存在するか
@@ -254,14 +286,14 @@ static  NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
         return YES;
     }else{
         return NO;
-    }   
+    }
 }
 
 - (NSDictionary *)googleAccountData
 {
     NSString *gId = (NSString *)[defaults stringForKey:KEY_GOOGLE_ID];
     NSString *gPass = (NSString *)[defaults stringForKey:KEY_GOOGLE_PASS];
-
+    
     NSArray *obj = [NSArray arrayWithObjects:gId,gPass, nil];
     NSArray *key = [NSArray arrayWithObjects:KEY_GOOGLE_ID,KEY_GOOGLE_PASS, nil];
     
@@ -282,7 +314,7 @@ static  NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
         return YES;
     }else{
         return NO;
-    }   
+    }
 }
 
 -(NSInteger)notificationTiming

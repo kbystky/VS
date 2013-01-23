@@ -21,23 +21,26 @@
 /**********/
 #import "DatabaseManager.h"
 #import "FMDatabase.h"
+#import "StringConst.h"
 /**********/
+#import "AccountInfoDto.h"
 
 #define CellIdentifier @"myCell"
 
-enum{
-    LIST_TYPE_ALL,
+typedef enum{
+    LIST_TYPE_ALL=0,
     LIST_TYPE_RESERVATION,
-}listType;
+}ListType;
 
 @interface ListViewController ()
 {
     UIActionSheet *actionSheet;
     UIAlertView *alert;
     NSInteger listType;
-    NSArray *listDatasource; 
+    NSArray *listDatasource;
     NSMutableArray *accountsName;
     NSString  *currentAccountName;
+    UserDefaultsManager *manager;
 }
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 @property (strong,nonatomic) UISegmentedControl *toolBarSegmentC;
@@ -65,12 +68,15 @@ enum{
 #pragma mark *****************  Life Cycle ******************
 - (void)viewDidLoad
 {
+    
     [super viewDidLoad];
-    [self test];
+    //    [self test];
     actionSheet = nil;
+    listType = LIST_TYPE_ALL;
+    manager = [[UserDefaultsManager alloc]init];
+    // 各種ビューの生成、設定
     [self createNavigationBarItem];
     [self createToolBarItem];
-    listType = LIST_TYPE_ALL;
     [self tableViewSetting];
     [self navigationBarSetting];
 }
@@ -86,10 +92,10 @@ enum{
     sql = @"CREATE TABLE IF NOT EXISTS  account_3 (appointment TEXT , date TEXT, times INTEGER , isSynced BOOL);";
     NSLog(@"create %d",[db executeUpdate:sql]);
     
-       sql = @"INSERT INTO vaccination (name,times) VALUES (?,?);";
-   
-       [db executeUpdate:sql,@"B型肝炎ワクチン",[NSNumber numberWithInt:2]];
-       [db executeUpdate:sql,@"ロタウイルスワクチン",[NSNumber numberWithInt:3]];
+    sql = @"INSERT INTO vaccination (name,times) VALUES (?,?);";
+    
+    [db executeUpdate:sql,@"B型肝炎ワクチン",[NSNumber numberWithInt:2]];
+    [db executeUpdate:sql,@"ロタウイルスワクチン",[NSNumber numberWithInt:3]];
     [db executeUpdate:sql,@"ヒブワクチン",[NSNumber numberWithInt:4]];
     [db executeUpdate:sql,@"小児用肺炎球菌ワクチン",[NSNumber numberWithInt:4]];
     [db executeUpdate:sql,@"四種混合・三種混合",[NSNumber numberWithInt:4]];
@@ -103,42 +109,50 @@ enum{
 }
 -(void)viewWillAppear:(BOOL)animated
 {
-    [super viewWillAppear:YES];
+    FUNK(); [super viewWillAppear:YES];
+
+    // navigatoin, toolbarの設定
     [self navigationControllerSetting];
     [self toolbarSetting];
-    
     
     BOOL currentAccountNameIsExist = NO;
     if(!self.isAccountExist) {
         [self createAccountForcibly];
     }else{
+        
         //総アカウントの名前保持
         accountsName = [[NSMutableArray alloc]init];
-        NSArray *accounts = [[UserDefaultsManager alloc]init].allAccount;
-        for(int i = 0;i<accounts.count;i++){
-            NSDictionary *account = [accounts objectAtIndex:i];
-            NSString *name = [account objectForKey:[UserDefaultsManager accountNameKey]];
+        NSArray *accounts = manager.allAccount;
+
+        for(AccountInfoDto *dto in accounts){
+            NSString *name = dto.name;
             if([name isEqualToString:currentAccountName]){
                 currentAccountNameIsExist = YES;
             }
             [accountsName addObject:name];
         }
-        
+
         if(!currentAccountNameIsExist){
-            NSDictionary *account = [accounts objectAtIndex:0];
-            currentAccountName = [account objectForKey:[UserDefaultsManager accountNameKey]];            
+            AccountInfoDto *account = [accounts objectAtIndex:0];
+            currentAccountName = account.name;
         }
-        self.navigationItem.title =  currentAccountName;
         
+        self.navigationItem.title =  currentAccountName;
+
         if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
+
+            //FIXME daoをこっからよんだらだめ
             VaccinationDao *dao = [[VaccinationDao alloc]init];
             listDatasource = [[NSArray alloc]initWithArray:dao.allVaccination];
+
         }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
+        
+            //FIXME daoをこっからよんだらだめ
             AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
-            UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
-            NSDictionary *account = [manager accountWithName:currentAccountName];
+            AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
             listDatasource = [[NSArray alloc]initWithArray:
-                              [dao appointmentDtoWithAccountId:[[account objectForKey:[UserDefaultsManager accountIdKey]]intValue]]];
+                              [dao appointmentDtoWithAccountId:accountInfoDto.accountId]];
+
         }
         [self.tableView reloadData];
     }
@@ -156,17 +170,16 @@ enum{
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 
-/***************************************************/
 #pragma mark *****************  View Setting ******************
 -(void)navigationControllerSetting{
     [self.navigationController setNavigationBarHidden:NO animated:NO];
     [self.navigationController setToolbarHidden:NO animated:NO];
 }
+
 #pragma mark navigation bar
 -(void)createNavigationBarItem
 {
-    
-    //segmented control    
+    //segmented control
     NSArray *array = [[NSArray alloc]initWithObjects:@"一覧",@"予約", nil];
     self.listShowTypeSwitchSegmentC = [[UISegmentedControl alloc]initWithItems:array];
     self.listShowTypeSwitchSegmentC.segmentedControlStyle = UISegmentedControlStyleBar;
@@ -177,25 +190,26 @@ enum{
     self.navigationController.navigationBar.topItem.rightBarButtonItem = segbtn;
     
     //設定ボタン
-    UIBarButtonItem *settingButton = [[UIBarButtonItem alloc]initWithTitle:@"設定" 
+    UIBarButtonItem *settingButton = [[UIBarButtonItem alloc]initWithTitle:@"設定"
                                                                      style:UIBarButtonItemStyleBordered
                                                                     target:self
                                                                     action:@selector(tapSettingButton)];
     
     self.navigationController.navigationBar.topItem.leftBarButtonItem = settingButton;
     //遷移先VCの戻るボタンの文字列を変更
-    UIBarButtonItem *backBarButtonItem = 
+    UIBarButtonItem *backBarButtonItem =
     [[UIBarButtonItem alloc] initWithTitle:@"戻る" style:UIBarButtonItemStyleBordered target:nil action:nil];
     [self.navigationItem setBackBarButtonItem:backBarButtonItem];
     
 }
+
 #pragma mark navigation bar
 -(void)navigationBarSetting
 {
     self.listShowTypeSwitchSegmentC.selectedSegmentIndex = 0;
     //アカウントの名前をtitileにセット
-    NSDictionary *account = [[[UserDefaultsManager alloc]init] accountWithId:1];
-    currentAccountName  =  [account objectForKey:[UserDefaultsManager accountNameKey]];
+    AccountInfoDto *dto = [manager accountWithId:1];
+    currentAccountName  =  dto.name;
     self.navigationItem.title =  currentAccountName;
 }
 
@@ -213,7 +227,7 @@ enum{
                                           target:self
                                           action:@selector(tapAccountEditButton)] ;
     
-    //SegmentedControl 
+    //SegmentedControl
     NSArray *array = [[NSArray alloc]initWithObjects:@"カレンダー",@"リスト", nil];
     self.toolBarSegmentC = [[UISegmentedControl alloc]initWithItems:array];
     self.toolBarSegmentC.frame = CGRectMake(0, 0, 150, 30);
@@ -249,10 +263,8 @@ enum{
         listDatasource = [[NSArray alloc]initWithArray:dao.allVaccination];
     }else if(sender.selectedSegmentIndex == LIST_TYPE_RESERVATION){
         AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
-        UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
-        NSDictionary *account = [manager accountWithName:currentAccountName];
-        listDatasource = [[NSArray alloc]initWithArray:
-                          [dao appointmentDtoWithAccountId:[[account objectForKey:[UserDefaultsManager accountIdKey]] intValue]]];
+       AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
+        listDatasource = [[NSArray alloc]initWithArray:[dao appointmentDtoWithAccountId:accountInfoDto.accountId]];
     }
     [self.tableView reloadData];
 }
@@ -284,12 +296,13 @@ enum{
 
 //TODO: アカウントが変更されたらテーブルビューのデータソースを変更すr
 #pragma mark *****************  Delegate ******************
+
 #pragma mark action sheet
 -(void)actionSheet:(UIActionSheet *)_actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex{
     
     //新規作成
     if(buttonIndex == ACTIONSHEET_CREATE_ACCOUNT){
-        if([[UserDefaultsManager alloc]init].accountCanCreate){
+        if(manager.accountCanCreate){
             [self presentModalViewController:[self createAccountVCInstanceWithEditType:EDITTYPE_CREATE accountInfo:nil] animated:YES];
         }else{
             alert = [AlertBuilder createAlertWithType:ALERTTYPE_DEMAND_DELETEACCOUNT];
@@ -304,6 +317,7 @@ enum{
 
 #pragma mark alert view
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
+    //アカウントの強制作成
     if(alertView.tag == ALERTTYPE_CREATEACCOUNTFORCIBLY){
         [self presentModalViewController:[self createAccountVCInstanceWithEditType:EDITTYPE_CREATE accountInfo:nil] animated:YES];
     }
@@ -313,14 +327,14 @@ enum{
 -(void)dismissAccountViewController:(AccountViewController *)viewController
 {
     //アカウントが作成されたかどうかのフラグ更新
-    self.isAccountExist = [[UserDefaultsManager alloc]init].accountIsExist;
+    self.isAccountExist = manager.accountIsExist;
     [viewController dismissModalViewControllerAnimated:YES];
 }
 
 -(void)dismissSettingViewController:(SettingViewController *)viewController
 {
     //アカウントが作成されたかどうかのフラグ更新
-    self.isAccountExist = [[UserDefaultsManager alloc]init].accountIsExist;
+    self.isAccountExist = manager.accountIsExist;
     [viewController dismissModalViewControllerAnimated:YES];
 }
 
@@ -341,7 +355,7 @@ enum{
         VaccinationDto *dto = [listDatasource objectAtIndex:indexPath.row];
         cell.textLabel.text = dto.name;
     }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
-        AccountAppointmentDto *dto = [listDatasource objectAtIndex:indexPath.row]; 
+        AccountAppointmentDto *dto = [listDatasource objectAtIndex:indexPath.row];
         cell.textLabel.text = dto.appointment;
     }
     
@@ -349,17 +363,17 @@ enum{
 }
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-
     DetailListViewController *detailListViewController;
-    NSDictionary *account = [[[UserDefaultsManager alloc]init] accountWithName:currentAccountName];
-    detailListViewController = [[DetailListViewController alloc]initWithAccountId:[[account objectForKey:[UserDefaultsManager accountIdKey]] intValue] 
+    AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
+    detailListViewController = [[DetailListViewController alloc]initWithAccountId:accountInfoDto.accountId
                                                                   vaccinationName:[tableView cellForRowAtIndexPath:indexPath].textLabel.text];
     NSLog(@"%@",[tableView cellForRowAtIndexPath:indexPath].textLabel.text);
     //array中のdtoをdetail view controller に渡す
     [self.navigationController pushViewController:detailListViewController animated:YES];
 }
 #pragma mark *****************  other ******************
-#pragma mark account 
+#pragma mark account
+
 //アカウントが無い場合は強制的に作成させる
 -(void)createAccountForcibly
 {
@@ -381,21 +395,20 @@ enum{
         listDatasource = [[NSArray alloc]initWithArray:dao.allVaccination];
     }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
         AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
-        UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
-        NSDictionary *account = [manager accountWithName:currentAccountName];
+        AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
         listDatasource = [[NSArray alloc]initWithArray:
-                          [dao appointmentDtoWithAccountId:[[account objectForKey:[UserDefaultsManager accountIdKey]]intValue]]];
+                          [dao appointmentDtoWithAccountId:accountInfoDto.accountId]];
     }
     [self.tableView reloadData];
 }
 
 #pragma mark create account view controller instance
--(AccountViewController *)createAccountVCInstanceWithEditType:(NSInteger)type accountInfo:(NSDictionary *)accountInfo
+-(AccountViewController *)createAccountVCInstanceWithEditType:(NSInteger)type accountInfo:(AccountInfoDto *)accountInfoDto
 {
-    AccountViewController *accountViewController = 
-    [[AccountViewController alloc]initWithViewControllerType:LIST_VC 
+    AccountViewController *accountViewController =
+    [[AccountViewController alloc]initWithViewControllerType:LIST_VC
                                                     editType:type
-                                                 accountInfo:accountInfo];
+                                                 accountInfo:accountInfoDto];
     accountViewController.delegate = self;
     return accountViewController;
 }

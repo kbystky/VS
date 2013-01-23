@@ -12,7 +12,7 @@
 #import "GData.h"
 #import "UserDefaultsManager.h"
 #import "SVProgressHUD.h"
-//test
+#import "StringConst.h"
 
 @interface SyncGoogleCalendarManager()
 {
@@ -54,7 +54,7 @@
     // set a title, description, and author
     UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
     NSDictionary *account  = [manager accountWithId:accountId];
-    NSString *accountName =  [account objectForKey:[UserDefaultsManager accountNameKey]];
+    NSString *accountName =  [account objectForKey:KEY_NAME];
     [newEvent setTitle:
      [GDataTextConstruct textConstructWithString:
       [NSString stringWithFormat:@"<予防接種：%@>　%@",vName,accountName]]];

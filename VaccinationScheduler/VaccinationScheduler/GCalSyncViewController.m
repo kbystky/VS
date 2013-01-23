@@ -21,7 +21,7 @@ enum {
 #import "AlertBuilder.h"
 #import "GData.h"
 #import "SyncGoogleCalendarManager.h"
-
+#import "StringConst.h"
 @interface GCalSyncViewController ()
 {
     UserDefaultsManager *manager;
@@ -126,8 +126,8 @@ enum {
         }
         if(manager.googleAccountDataIsExist){
             NSDictionary *googleAccountData = manager.googleAccountData;
-            self.idTextField.text = [googleAccountData objectForKey:[UserDefaultsManager googleAccountIdKey]];
-            self.passwordTextField.text = [googleAccountData objectForKey:[UserDefaultsManager googleAccountPassKey]];
+            self.idTextField.text = [googleAccountData objectForKey:KEY_GOOGLE_ID];
+            self.passwordTextField.text = [googleAccountData objectForKey:KEY_GOOGLE_PASS];
         }else{
         }
     }
