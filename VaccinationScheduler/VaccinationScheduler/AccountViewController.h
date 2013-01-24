@@ -7,9 +7,11 @@
 //
 
 #import <UIKit/UIKit.h>
+
 typedef enum{
     LIST_VC=1
 }PreviousVCType;
+
 typedef enum{
     EDITTYPE_CREATE=1,
     EDITTYPE_EDIT
@@ -17,6 +19,7 @@ typedef enum{
 
 @protocol accountViewControllerDelegate;
 @class AccountInfoDto;
+
 @interface AccountViewController : UIViewController<UITextFieldDelegate,UIActionSheetDelegate,UIAlertViewDelegate>
 
 -(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountId:(NSInteger)accountId;
@@ -25,6 +28,7 @@ typedef enum{
 
 @property(weak,nonatomic)id delegate;
 @end
+
 
 //プロトコル
 @protocol accountViewControllerDelegate<NSObject>
