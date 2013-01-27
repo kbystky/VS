@@ -8,22 +8,26 @@
 
 #import "ListViewController.h"
 #import "DetailListViewController.h"
-
 #import "AppDelegate.h"
+#import "StringConst.h"
+
+// builder
 #import "ActionSheetBuilder.h"
 #import "AlertBuilder.h"
-#import "UserDefaultsManager.h"
 
-#import "VaccinationDao.h"
+// data access
+#import "UserDefaultsManager.h"
+#import "VaccinationService.h"
+#import "AccountAppointmentService.h"
+
+// dto
 #import "VaccinationDto.h"
-#import "AccountAppointmentDao.h"
+#import "AccountInfoDto.h"
 #import "AccountAppointmentDto.h"
+
 /**********/
 #import "DatabaseManager.h"
-#import "FMDatabase.h"
-#import "StringConst.h"
 /**********/
-#import "AccountInfoDto.h"
 
 #define CellIdentifier @"myCell"
 
@@ -54,6 +58,7 @@ typedef enum{
 @synthesize tableView = _tableView;
 @synthesize toolBarSegmentC=_toolBarSegmentC;
 @synthesize listShowTypeSwitchSegmentC = _listShowTypeSwitchSegmentC;
+
 #pragma mark *****************  Initialize ******************
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -68,9 +73,7 @@ typedef enum{
 #pragma mark *****************  Life Cycle ******************
 - (void)viewDidLoad
 {
-    
     [super viewDidLoad];
-    //    [self test];
     actionSheet = nil;
     listType = LIST_TYPE_ALL;
     manager = [[UserDefaultsManager alloc]init];
@@ -80,50 +83,26 @@ typedef enum{
     [self tableViewSetting];
     [self navigationBarSetting];
 }
--(void)test{
-    FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
-    [db open];
-    NSString * sql = @"CREATE TABLE IF NOT EXISTS  vaccination (name TEXT , times INTEGER);";
-    NSLog(@"create %d",[db executeUpdate:sql]);
-    sql = @"CREATE TABLE IF NOT EXISTS  account_1 (appointment TEXT , date TEXT, times INTEGER , isSynced BOOL);";
-    NSLog(@"create %d",[db executeUpdate:sql]);
-    sql = @"CREATE TABLE IF NOT EXISTS  account_2 (appointment TEXT , date TEXT, times INTEGER , isSynced BOOL);";
-    NSLog(@"create %d",[db executeUpdate:sql]);
-    sql = @"CREATE TABLE IF NOT EXISTS  account_3 (appointment TEXT , date TEXT, times INTEGER , isSynced BOOL);";
-    NSLog(@"create %d",[db executeUpdate:sql]);
-    
-    sql = @"INSERT INTO vaccination (name,times) VALUES (?,?);";
-    
-    [db executeUpdate:sql,@"B型肝炎ワクチン",[NSNumber numberWithInt:2]];
-    [db executeUpdate:sql,@"ロタウイルスワクチン",[NSNumber numberWithInt:3]];
-    [db executeUpdate:sql,@"ヒブワクチン",[NSNumber numberWithInt:4]];
-    [db executeUpdate:sql,@"小児用肺炎球菌ワクチン",[NSNumber numberWithInt:4]];
-    [db executeUpdate:sql,@"四種混合・三種混合",[NSNumber numberWithInt:4]];
-    [db executeUpdate:sql,@"不活化ポリオワクチン",[NSNumber numberWithInt:4]];
-    [db executeUpdate:sql,@"BCGワクチン",[NSNumber numberWithInt:1]];
-    [db executeUpdate:sql,@"MRワクチン",[NSNumber numberWithInt:1]];
-    [db executeUpdate:sql,@"おたふくかぜワクチン",[NSNumber numberWithInt:2]];
-    [db executeUpdate:sql,@"水痘ワクチン",[NSNumber numberWithInt:2]];
-    [db executeUpdate:sql,@"インフルエンザワクチン",[NSNumber numberWithInt:2]];
-    [db close];
-}
+
 -(void)viewWillAppear:(BOOL)animated
 {
     FUNK(); [super viewWillAppear:YES];
-
+    
     // navigatoin, toolbarの設定
     [self navigationControllerSetting];
     [self toolbarSetting];
     
     BOOL currentAccountNameIsExist = NO;
+    //アカウントが存在するかチェック
     if(!self.isAccountExist) {
+        
         [self createAccountForcibly];
     }else{
         
         //総アカウントの名前保持
         accountsName = [[NSMutableArray alloc]init];
         NSArray *accounts = manager.allAccount;
-
+        
         for(AccountInfoDto *dto in accounts){
             NSString *name = dto.name;
             if([name isEqualToString:currentAccountName]){
@@ -131,29 +110,15 @@ typedef enum{
             }
             [accountsName addObject:name];
         }
-
+        
         if(!currentAccountNameIsExist){
             AccountInfoDto *account = [accounts objectAtIndex:0];
             currentAccountName = account.name;
         }
         
         self.navigationItem.title =  currentAccountName;
-
-        if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
-
-            //FIXME daoをこっからよんだらだめ
-            VaccinationDao *dao = [[VaccinationDao alloc]init];
-            listDatasource = [[NSArray alloc]initWithArray:dao.allVaccination];
-
-        }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
+        [self changeListDataSourceWithSelectedSegmentIndex:self.listShowTypeSwitchSegmentC.selectedSegmentIndex];
         
-            //FIXME daoをこっからよんだらだめ
-            AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
-            AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
-            listDatasource = [[NSArray alloc]initWithArray:
-                              [dao appointmentDtoWithAccountId:accountInfoDto.accountId]];
-
-        }
         [self.tableView reloadData];
     }
 }
@@ -256,16 +221,7 @@ typedef enum{
 //一覧表示・予約済み表示を切り替える
 - (void)changeListShowType:(UISegmentedControl *)sender
 {
-    //FIX
-    //リストビューデータソース生成
-    if(sender.selectedSegmentIndex == LIST_TYPE_ALL){
-        VaccinationDao *dao = [[VaccinationDao alloc]init];
-        listDatasource = [[NSArray alloc]initWithArray:dao.allVaccination];
-    }else if(sender.selectedSegmentIndex == LIST_TYPE_RESERVATION){
-        AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
-       AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
-        listDatasource = [[NSArray alloc]initWithArray:[dao appointmentDtoWithAccountId:accountInfoDto.accountId]];
-    }
+    [self changeListDataSourceWithSelectedSegmentIndex:sender.selectedSegmentIndex];
     [self.tableView reloadData];
 }
 
@@ -356,20 +312,26 @@ typedef enum{
         cell.textLabel.text = dto.name;
     }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
         AccountAppointmentDto *dto = [listDatasource objectAtIndex:indexPath.row];
-        cell.textLabel.text = dto.appointment;
+        cell.textLabel.text = dto.vaccinationDto.name;
     }
     
     return cell;
 }
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    DetailListViewController *detailListViewController;
-    AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
-    detailListViewController = [[DetailListViewController alloc]initWithAccountId:accountInfoDto.accountId
-                                                                  vaccinationName:[tableView cellForRowAtIndexPath:indexPath].textLabel.text];
-    NSLog(@"%@",[tableView cellForRowAtIndexPath:indexPath].textLabel.text);
-    //array中のdtoをdetail view controller に渡す
-    [self.navigationController pushViewController:detailListViewController animated:YES];
+    if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
+
+        DetailListViewController *detailListViewController;
+        AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
+        detailListViewController = [[DetailListViewController alloc]initWithAccountId:accountInfoDto.accountId vaccinationDto:[listDatasource objectAtIndex:indexPath.row]];
+        NSLog(@"current name %@ id %d, name %@ id %d",accountInfoDto.name,accountInfoDto.accountId,[[listDatasource objectAtIndex:indexPath.row] name],[[listDatasource objectAtIndex:indexPath.row] vcId]);
+        NSLog(@"%@",[tableView cellForRowAtIndexPath:indexPath].textLabel.text);
+        //array中のdtoをdetail view controller に渡す
+        [self.navigationController pushViewController:detailListViewController animated:YES];
+        
+    }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
+        
+    }
 }
 #pragma mark *****************  other ******************
 #pragma mark account
@@ -384,22 +346,27 @@ typedef enum{
 
 -(void)changeAccount:(NSInteger)accountId
 {
-    
     NSLog(@"title %@",[accountsName objectAtIndex:accountId-1]);
     currentAccountName  =  [accountsName objectAtIndex:accountId-1];
     self.navigationItem.title =  currentAccountName;
-    
-    
-    if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
-        VaccinationDao *dao = [[VaccinationDao alloc]init];
-        listDatasource = [[NSArray alloc]initWithArray:dao.allVaccination];
-    }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
-        AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
-        AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
-        listDatasource = [[NSArray alloc]initWithArray:
-                          [dao appointmentDtoWithAccountId:accountInfoDto.accountId]];
-    }
+    [self changeListDataSourceWithSelectedSegmentIndex:self.listShowTypeSwitchSegmentC.selectedSegmentIndex];
     [self.tableView reloadData];
+}
+
+- (void)changeListDataSourceWithSelectedSegmentIndex:(NSInteger)selectedIndex
+{
+    FUNK();
+    
+    if(selectedIndex == LIST_TYPE_ALL){
+        
+        listDatasource =  [VaccinationService vaccinationData];
+        
+    }else if(selectedIndex == LIST_TYPE_RESERVATION){
+        //選択中のアカウントDtoを生成、サービスから予約状況を取得
+        AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
+        AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
+        listDatasource = [service appointmentsDtoWithAccountId:accountInfoDto.accountId];
+    }
 }
 
 #pragma mark create account view controller instance

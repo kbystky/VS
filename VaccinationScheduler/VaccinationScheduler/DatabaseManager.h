@@ -11,5 +11,6 @@
 @interface DatabaseManager : NSObject
 
 + (FMDatabase *)createInstanceWithDbName:(NSString *)dbName;
-
+- (void)createVaccinationList;
++ (void)createNewTable;
 @end

@@ -9,6 +9,8 @@
 #import "VaccinationDto.h"
 
 @implementation VaccinationDto
+@synthesize vcId = _vcId;
 @synthesize name=_name;
-@synthesize times = _times;
+@synthesize needTimes = _needTimes;
+@synthesize period = _period;
 @end

@@ -7,10 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-
+@class VaccinationDto;
 @interface AccountAppointmentDto : NSObject
-@property(strong,nonatomic)NSString *appointment;
-@property(strong,nonatomic)NSString *appointmentDate;
+@property(nonatomic)NSInteger apId;
+@property(nonatomic)NSInteger accountId;
+@property(nonatomic)NSInteger vcId;
 @property(nonatomic)NSInteger times;
+@property(strong,nonatomic)NSString *appointmentDate;
+@property(strong,nonatomic)NSString *consultationDate;
 @property(nonatomic)BOOL isSynced;
+@property(strong,nonatomic)VaccinationDto *vaccinationDto;
 @end

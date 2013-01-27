@@ -46,6 +46,8 @@
 		B02C973E166BAE03006F6893 /* CalendarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B02C973C166BAE03006F6893 /* CalendarViewController.m */; };
 		B02C973F166BAE03006F6893 /* CalendarViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = B02C973D166BAE03006F6893 /* CalendarViewController.xib */; };
 		B02C974E166D0182006F6893 /* LocalNotificationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B02C974D166D0182006F6893 /* LocalNotificationManager.m */; };
+		B02D61C516B54CCE00CD595D /* VaccinationService.m in Sources */ = {isa = PBXBuildFile; fileRef = B02D61C416B54CCE00CD595D /* VaccinationService.m */; };
+		B02D61C816B54E2D00CD595D /* AccountAppointmentService.m in Sources */ = {isa = PBXBuildFile; fileRef = B02D61C716B54E2D00CD595D /* AccountAppointmentService.m */; };
 		B04138B016778DC90047D231 /* UserDefaultsManager.m in Sources */ = {isa = PBXBuildFile; fileRef = B04138AF16778DC90047D231 /* UserDefaultsManager.m */; };
 		B0AF1177169F1E2300E45EE0 /* libGDataTouchStaticLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B0AF116E169F1E1700E45EE0 /* libGDataTouchStaticLib.a */; };
 		B0D7455816823DB9001C4D59 /* VaccinationDao.m in Sources */ = {isa = PBXBuildFile; fileRef = B0D7455716823DB9001C4D59 /* VaccinationDao.m */; };
@@ -489,6 +491,10 @@
 		B02C973D166BAE03006F6893 /* CalendarViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CalendarViewController.xib; sourceTree = "<group>"; };
 		B02C974C166D0182006F6893 /* LocalNotificationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocalNotificationManager.h; sourceTree = "<group>"; };
 		B02C974D166D0182006F6893 /* LocalNotificationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LocalNotificationManager.m; sourceTree = "<group>"; };
+		B02D61C316B54CCE00CD595D /* VaccinationService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VaccinationService.h; sourceTree = "<group>"; };
+		B02D61C416B54CCE00CD595D /* VaccinationService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = VaccinationService.m; sourceTree = "<group>"; };
+		B02D61C616B54E2D00CD595D /* AccountAppointmentService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AccountAppointmentService.h; sourceTree = "<group>"; };
+		B02D61C716B54E2D00CD595D /* AccountAppointmentService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AccountAppointmentService.m; sourceTree = "<group>"; };
 		B04138AE16778DC90047D231 /* UserDefaultsManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UserDefaultsManager.h; sourceTree = "<group>"; };
 		B04138AF16778DC90047D231 /* UserDefaultsManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UserDefaultsManager.m; sourceTree = "<group>"; };
 		B0AF115F169F1E1600E45EE0 /* GData.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = GData.xcodeproj; path = ../Source/GData.xcodeproj; sourceTree = "<group>"; };
@@ -928,6 +934,7 @@
 		55DD2F7E167EF94F0008F374 /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				B02D61C216B54BAA00CD595D /* Service */,
 				55F8E0F4168017DC003C71E4 /* Logic */,
 				55DD2F70167EF3DB0008F374 /* Dao */,
 				55DD2F74167EF40D0008F374 /* Dto */,
@@ -1050,6 +1057,17 @@
 				55F8E0E516800433003C71E4 /* SettingViewController.xib */,
 			);
 			name = ViewController;
+			sourceTree = "<group>";
+		};
+		B02D61C216B54BAA00CD595D /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				B02D61C316B54CCE00CD595D /* VaccinationService.h */,
+				B02D61C416B54CCE00CD595D /* VaccinationService.m */,
+				B02D61C616B54E2D00CD595D /* AccountAppointmentService.h */,
+				B02D61C716B54E2D00CD595D /* AccountAppointmentService.m */,
+			);
+			name = Service;
 			sourceTree = "<group>";
 		};
 		B0AF1160169F1E1600E45EE0 /* Products */ = {
@@ -1326,6 +1344,8 @@
 				5513DC6C1682C36600E0D745 /* SyncGoogleCalendarManager.m in Sources */,
 				555E61ED16AFA95B0022F429 /* StringConst.m in Sources */,
 				555E61F216AFB2710022F429 /* DateFormatter.m in Sources */,
+				B02D61C516B54CCE00CD595D /* VaccinationService.m in Sources */,
+				B02D61C816B54E2D00CD595D /* AccountAppointmentService.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

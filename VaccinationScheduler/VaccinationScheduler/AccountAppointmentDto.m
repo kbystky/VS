@@ -9,8 +9,12 @@
 #import "AccountAppointmentDto.h"
 
 @implementation AccountAppointmentDto
-@synthesize appointment = _appointment;
-@synthesize appointmentDate = _appointmentDate;
+@synthesize apId = _apId;
+@synthesize accountId = _accountId;
+@synthesize vcId = _vcId;
 @synthesize times = _times;
+@synthesize appointmentDate = _appointmentDate;
+@synthesize consultationDate = _consultationDate;
 @synthesize isSynced = _isSynced;
+@synthesize vaccinationDto = _vaccinationDto;
 @end

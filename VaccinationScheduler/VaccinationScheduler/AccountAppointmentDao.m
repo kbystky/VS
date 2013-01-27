@@ -13,24 +13,32 @@
 #import "DatabaseManager.h"
 #import "UserDefaultsManager.h"
 #import "StringConst.h"
+#define DBNAME @"appointment"
 
 @implementation AccountAppointmentDao
--(NSArray *)appointmentDtoWithAccountId:(NSInteger)accountid{
+
+- (NSArray *)appointmentsDataWithAccountId:(NSInteger)accountid{
     NSMutableArray *appointment = [[NSMutableArray alloc]init];
-    
+
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];
-    NSString *sql = [NSString stringWithFormat:@"SELECT appointment,times,isSynced FROM %@%d;",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
-    
+//    NSString *sql = [NSString stringWithFormat:@"SELECT appointment,times,isSynced FROM %@%d;",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
+        NSString *sql = [NSString stringWithFormat:@"SELECT id,accountId,vaccinationId,times,appointmentDate,consultationDate,isSynced FROM appointment WHERE accountId = %d",accountid];
+
     //データ取得
     FMResultSet *results = [db executeQuery:sql];
     while([results next]){
         AccountAppointmentDto *dto = [[AccountAppointmentDto alloc]init];
-        dto.appointment = [results stringForColumnIndex:0];
-        dto.times = [results intForColumnIndex:1];
-        dto.isSynced = [results boolForColumnIndex:2];
+        dto.apId = [results intForColumnIndex:0];
+        dto.accountId = [results intForColumnIndex:1];
+        dto.vcId = [results intForColumnIndex:2];
+        dto.times = [results intForColumnIndex:3];
+        dto.appointmentDate = [results stringForColumnIndex:4];
+        dto.consultationDate = [results stringForColumnIndex:5];
+        dto.isSynced = [results boolForColumnIndex:6];
         [appointment addObject:dto];
     }
+    
     [db close];
     return appointment;
 }
@@ -48,7 +56,15 @@
     [db close];
     return times;
 }
-
+-(BOOL)saveAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto{
+    NSLog(@"accountId %d",dto.accountId);
+    NSLog(@"accountId %d",dto.vcId);
+    NSLog(@"accountId %d",dto.times);
+    NSLog(@"accountId %@",dto.appointmentDate);
+    NSLog(@"accountId %@",dto.consultationDate);
+    NSLog(@"accountId %d",dto.isSynced);
+    NSLog(@"accountId %@",dto.vaccinationDto);
+}
 -(BOOL)saveAppointmentWithDate:(NSString *)date vaccinationName:(NSString *)name times:(NSInteger)times accountId:(NSInteger)accountid{
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];

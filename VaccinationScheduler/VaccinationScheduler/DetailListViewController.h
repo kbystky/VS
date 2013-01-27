@@ -12,4 +12,5 @@
 
 @interface DetailListViewController : UIViewController<UITextFieldDelegate,UIActionSheetDelegate>
 -(id)initWithAccountId:(NSInteger)_accountId vaccinationName:(NSString *)name;
+-(id)initWithAccountId:(NSInteger)_accountId vaccinationDto:(VaccinationDto *)dto;
 @end

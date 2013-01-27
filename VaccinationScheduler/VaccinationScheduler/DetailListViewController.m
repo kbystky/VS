@@ -8,10 +8,14 @@
 
 #import "DetailListViewController.h"
 #import "AccountAppointmentDao.h"
+#import "AccountAppointmentService.h"
+
 #import "VaccinationDao.h"
 #import "AlertBuilder.h"
 #import "LocalNotificationManager.h"
 #import "DateFormatter.h"
+
+
 @interface DetailListViewController ()
 {
     AccountAppointmentDto *appointmentDto;
@@ -46,6 +50,19 @@
     }
     return self;
 }
+
+-(id)initWithAccountId:(NSInteger)_accountId vaccinationDto:(VaccinationDto *)dto
+{
+    self = [super init];
+    if(self){
+        accountId = _accountId;
+        FUNK();
+        NSLog(@"account id %d",accountId);
+        vaccinationDto = dto;
+    }
+    return self;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -90,16 +107,32 @@
     }
 }
 - (IBAction)addAppointment:(id)sender {
-    AccountAppointmentDao *appointmentDao = [[AccountAppointmentDao alloc]init];
+//    AccountAppointmentDao *appointmentDao = [[AccountAppointmentDao alloc]init];
+
+    // 予約日が入力済みなら登録する
     if(self.appointmentDayTextField.text.length != 0){
-        [appointmentDao saveAppointmentWithDate:self.appointmentDayTextField.text vaccinationName:self.vaccinationNameLabel.text times:[self.finishTimesLable.text intValue] accountId:accountId];
+        //登録
+        AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
+        [service saveAppointmentWithAccountId:accountId
+                                        times:[self.finishTimesLable.text intValue]
+                                         appointmentDate:self.appointmentDayTextField.text
+                                         consultationDate:nil
+                              vaccinationDto:vaccinationDto];
+        
+        //notificationに登録
         LocalNotificationManager *manager = [[LocalNotificationManager alloc]init];
         [manager createNotificationWithRecordDate:self.appointmentDayTextField.text accountId:accountId];
+
         [self.navigationController popViewControllerAnimated:YES];
+        
+//        [appointmentDao saveAppointmentWithDate:self.appointmentDayTextField.text vaccinationName:self.vaccinationNameLabel.text times:[self.finishTimesLable.text intValue] accountId:accountId];
+
     }else{
         [[AlertBuilder createAlertWithType:ALERTTYPE_DEMAND_FILLINFO] show];
     }
 }
+
+
 -(void)showPicker {
     self.pickerViewPopup = [[UIActionSheet alloc] initWithTitle:nil 
                                                        delegate:self 

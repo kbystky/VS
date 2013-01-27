@@ -11,10 +11,9 @@
 @interface UserDefaultsManager : NSObject
 -(id)init;
 
-
--(void)createAccountWithName:(NSString *)name birthDay:(NSString *)birthDay;
--(void)saveAccountWithAccountInfo:(NSDictionary *)info;
--(void)removeAccountWithAccountInfo:(NSDictionary *)info;
+//-(void)createAccountWithName:(NSString *)name birthDay:(NSString *)birthDay;
+//-(void)saveAccountWithAccountInfo:(NSDictionary *)info;
+//-(void)removeAccountWithAccountInfo:(NSDictionary *)info;
 
 -(void)saveAccount:(AccountInfoDto *)accountInfoDto;
 -(void)removeAccount:(AccountInfoDto *)accountInfoDto;

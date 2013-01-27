@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 
 @interface VaccinationDto : NSObject
+@property (nonatomic)NSInteger vcId;
 @property (strong,nonatomic)NSString *name;
-@property (nonatomic)NSInteger times;
+@property (nonatomic)NSInteger needTimes;
+@property (nonatomic)NSInteger period;
 @end

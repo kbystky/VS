@@ -10,4 +10,5 @@
 
 @interface VaccinationDao : NSObject
 -(NSArray *)allVaccination;
+- (NSArray *)vaccinationsWithvaccinationId:(NSArray *)vcId;
 @end
