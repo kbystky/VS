@@ -10,12 +10,13 @@
 #define ID @"accountId"
 #define NAME @"name"
 #define BIRTHDAY @"birthday"
+#define APPOINTMENT @"appointment"
 
 @implementation AccountInfoDto
 @synthesize name = _name;
 @synthesize birthDay = _birthDay;
 @synthesize accountId = _accountId;
-
+@synthesize appointmentDto = _appointmentDto;
 //NSString *const CODEKEY_ID = @"accountId";
 //NSString *const CODEKEY_BIRTHDAY = @"birthDay";
 //NSString *const CODEKEY_NAME = @"name";

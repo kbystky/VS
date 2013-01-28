@@ -45,6 +45,11 @@ typedef enum{
     NSMutableArray *accountsName;
     NSString  *currentAccountName;
     UserDefaultsManager *manager;
+    
+    AccountInfoDto *currentAccountInfoDto;
+    NSArray *accountsDto;
+    NSArray *vaccinationsDto;
+    NSArray *appointmentsDto;
 }
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 @property (strong,nonatomic) UISegmentedControl *toolBarSegmentC;
@@ -69,12 +74,13 @@ typedef enum{
     return self;
 }
 
-//TODO: datasource取得部分修正
 #pragma mark *****************  Life Cycle ******************
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     actionSheet = nil;
+    vaccinationsDto = nil;
+    appointmentsDto = nil;
     listType = LIST_TYPE_ALL;
     manager = [[UserDefaultsManager alloc]init];
     // 各種ビューの生成、設定
@@ -92,36 +98,55 @@ typedef enum{
     [self navigationControllerSetting];
     [self toolbarSetting];
     
-    BOOL currentAccountNameIsExist = NO;
     //アカウントが存在するかチェック
     if(!self.isAccountExist) {
-        
         [self createAccountForcibly];
     }else{
+        /*
+         ・総アカウントdtoの取得
+         ・選択されているアカウントが削除されていないかのチェック
+         ・datasource の生成
+         */
         
-        //総アカウントの名前保持
-        accountsName = [[NSMutableArray alloc]init];
-        NSArray *accounts = manager.allAccount;
+        BOOL currentAccountNameIsExist = NO;
+        //総アカウントDtoの取得
+        accountsDto = manager.allAccount;
         
-        for(AccountInfoDto *dto in accounts){
+        //現在表示中のアカウントが存在するかチェック(アカウントが選択中に削除されたとき用)
+        for(AccountInfoDto *dto in accountsDto){
             NSString *name = dto.name;
-            if([name isEqualToString:currentAccountName]){
+            if([name isEqualToString:currentAccountInfoDto.name]){
                 currentAccountNameIsExist = YES;
+                break;
             }
-            [accountsName addObject:name];
         }
-        
+        //あった場合
         if(!currentAccountNameIsExist){
-            AccountInfoDto *account = [accounts objectAtIndex:0];
-            currentAccountName = account.name;
+            AccountInfoDto *dto = [accountsDto objectAtIndex:0];
+            currentAccountInfoDto = dto;
+        }else{
+            //無かった場合はappointmentsDtoを初期化する
+            appointmentsDto = nil;
         }
         
-        self.navigationItem.title =  currentAccountName;
-        [self changeListDataSourceWithSelectedSegmentIndex:self.listShowTypeSwitchSegmentC.selectedSegmentIndex];
+        self.navigationItem.title =  currentAccountInfoDto.name;
         
+        //テーブルの listdata 初期化
+        if(vaccinationsDto == nil){
+            vaccinationsDto = [[NSArray alloc]initWithArray:[VaccinationService vaccinationData]];
+        }
+        
+        if(appointmentsDto == nil){
+            //選択中のアカウントDtoをからアポイントメントDto datasourceを生成
+            AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
+            appointmentsDto = [service appointmentsDtoWithAccountId:currentAccountInfoDto.accountId];
+        }
+        
+        [self changeListDataSourceWithSelectedSegmentIndex:self.listShowTypeSwitchSegmentC.selectedSegmentIndex];
         [self.tableView reloadData];
     }
 }
+
 - (void)viewDidUnload
 {
     [self setToolBarSegmentC:nil];
@@ -172,10 +197,6 @@ typedef enum{
 -(void)navigationBarSetting
 {
     self.listShowTypeSwitchSegmentC.selectedSegmentIndex = 0;
-    //アカウントの名前をtitileにセット
-    AccountInfoDto *dto = [manager accountWithId:1];
-    currentAccountName  =  dto.name;
-    self.navigationItem.title =  currentAccountName;
 }
 
 #pragma mark tool bar
@@ -307,31 +328,47 @@ typedef enum{
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
     }
+    
     if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
+        
         VaccinationDto *dto = [listDatasource objectAtIndex:indexPath.row];
         cell.textLabel.text = dto.name;
+        
     }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
+        
         AccountAppointmentDto *dto = [listDatasource objectAtIndex:indexPath.row];
         cell.textLabel.text = dto.vaccinationDto.name;
+        
     }
-    
     return cell;
 }
+
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
+    DetailListViewController *detailListViewController;
+//    if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
+//        //詳細画面に遷移
+//        currentAccountInfoDto.appointmentDto = [[NSArray alloc]initWithArray:appointmentsDto];
+//        detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:[listDatasource objectAtIndex:indexPath.row] editType:TYPE_CREATE];
+//                
+//    }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
+//
+//        currentAccountInfoDto.appointmentDto = [[NSArray alloc]initWithArray:appointmentsDto];
+//        detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:[[listDatasource objectAtIndex:indexPath.row] vaccinationDto] editType:TYPE_EDIT];
+//    }
 
-        DetailListViewController *detailListViewController;
-        AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
-        detailListViewController = [[DetailListViewController alloc]initWithAccountId:accountInfoDto.accountId vaccinationDto:[listDatasource objectAtIndex:indexPath.row]];
-        NSLog(@"current name %@ id %d, name %@ id %d",accountInfoDto.name,accountInfoDto.accountId,[[listDatasource objectAtIndex:indexPath.row] name],[[listDatasource objectAtIndex:indexPath.row] vcId]);
-        NSLog(@"%@",[tableView cellForRowAtIndexPath:indexPath].textLabel.text);
-        //array中のdtoをdetail view controller に渡す
-        [self.navigationController pushViewController:detailListViewController animated:YES];
-        
-    }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
-        
+    NSInteger type = TYPE_CREATE;
+//    if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
+//        type = TYPE_CREATE;
+//    }else
+        if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
+        type = TYPE_EDIT;
     }
+
+    currentAccountInfoDto.appointmentDto = [[NSArray alloc]initWithArray:appointmentsDto];
+    detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:[listDatasource objectAtIndex:indexPath.row] editType:type];
+    
+    [self.navigationController pushViewController:detailListViewController animated:YES];
 }
 #pragma mark *****************  other ******************
 #pragma mark account
@@ -339,6 +376,7 @@ typedef enum{
 //アカウントが無い場合は強制的に作成させる
 -(void)createAccountForcibly
 {
+    FUNK();
     alert = [AlertBuilder createAlertWithType:ALERTTYPE_CREATEACCOUNTFORCIBLY];
     alert.delegate = self;
     [alert show];
@@ -346,9 +384,17 @@ typedef enum{
 
 -(void)changeAccount:(NSInteger)accountId
 {
-    NSLog(@"title %@",[accountsName objectAtIndex:accountId-1]);
-    currentAccountName  =  [accountsName objectAtIndex:accountId-1];
-    self.navigationItem.title =  currentAccountName;
+    FUNK();
+    NSLog(@"change account %@",[accountsDto objectAtIndex:accountId - 1]);
+    
+    //選択されたdtoをcurrentに保持、title変更
+    currentAccountInfoDto = [accountsDto objectAtIndex:accountId - 1];
+    self.navigationItem.title = currentAccountInfoDto.name;
+    
+    //選択中のアカウントDtoをからアポイントメントDto datasourceを生成
+    AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
+    appointmentsDto = [service appointmentsDtoWithAccountId:currentAccountInfoDto.accountId];
+    
     [self changeListDataSourceWithSelectedSegmentIndex:self.listShowTypeSwitchSegmentC.selectedSegmentIndex];
     [self.tableView reloadData];
 }
@@ -356,26 +402,24 @@ typedef enum{
 - (void)changeListDataSourceWithSelectedSegmentIndex:(NSInteger)selectedIndex
 {
     FUNK();
-    
     if(selectedIndex == LIST_TYPE_ALL){
-        
-        listDatasource =  [VaccinationService vaccinationData];
+        NSLog(@"change source all");
+        listDatasource =  vaccinationsDto;
         
     }else if(selectedIndex == LIST_TYPE_RESERVATION){
-        //選択中のアカウントDtoを生成、サービスから予約状況を取得
-        AccountInfoDto *accountInfoDto = [manager accountWithName:currentAccountName];
-        AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
-        listDatasource = [service appointmentsDtoWithAccountId:accountInfoDto.accountId];
+        NSLog(@"change source appoiintment");
+        listDatasource = appointmentsDto;
     }
 }
 
 #pragma mark create account view controller instance
--(AccountViewController *)createAccountVCInstanceWithEditType:(NSInteger)type accountInfo:(AccountInfoDto *)accountInfoDto
+-(AccountViewController *)createAccountVCInstanceWithEditType:(NSInteger)type accountInfo:(AccountInfoDto *)_accountInfoDto
 {
+    FUNK();
     AccountViewController *accountViewController =
     [[AccountViewController alloc]initWithViewControllerType:LIST_VC
                                                     editType:type
-                                                 accountInfo:accountInfoDto];
+                                                 accountInfo:_accountInfoDto];
     accountViewController.delegate = self;
     return accountViewController;
 }

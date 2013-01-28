@@ -16,7 +16,7 @@
     NSString *dir= [paths objectAtIndex:0];
     NSString *databasePath = [dir stringByAppendingPathComponent:dbName];
     FUNK();
-    NSLog(@"%@\n%@",paths,databasePath);
+//    NSLog(@"%@\n%@",paths,databasePath);
     return [[FMDatabase alloc] initWithPath:databasePath];
 }
 
