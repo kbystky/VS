@@ -22,8 +22,6 @@ typedef enum{
 
 @interface AccountViewController : UIViewController<UITextFieldDelegate,UIActionSheetDelegate,UIAlertViewDelegate>
 
--(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountId:(NSInteger)accountId;
-//-(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountInfo:(NSDictionary *)accountInfo;
 -(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountInfo:(AccountInfoDto *)accountInfo;
 
 @property(weak,nonatomic)id delegate;

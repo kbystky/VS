@@ -19,6 +19,7 @@
     Calendar *cal;
     CalendarView* calView;
     NSMutableDictionary *selectedDayInfo;
+    UITableView *tableView;
 }
 @property (strong,nonatomic) UISegmentedControl *segmentC;
 @end
@@ -50,7 +51,36 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
     [self navigationControllerSetting];
     [self navigationBarSetting];
     [self toolbarSetting];
-    
+    calView.backgroundColor = [UIColor blueColor];
+    NSLog(@"height %f width %f",[calView calendarViewSize].height,[calView calendarViewSize].width);
+    NSLog(@"height %f %f %f",
+          self.view.frame.size.height,
+          self.navigationController.navigationBar.frame.size.height,
+          self.navigationController.toolbar.frame.size.height);
+    CGFloat tmp = self.view.frame.size.height - (calView.calendarViewSize.height - self.navigationController.navigationBar.frame.size.height);
+    NSLog(@"tmp %f",tmp);
+    CGRect rect3 = CGRectMake(0,
+                              calView.calendarViewSize.height,
+                              SCREEN_WIDTH,
+                              self.view.frame.size.height - calView.calendarViewSize.height
+                              );
+
+    CGRect rect2 = CGRectMake(0,
+                              calView.calendarViewSize.height,
+                              SCREEN_WIDTH,
+                              self.view.frame.size.height -
+                              (calView.calendarViewSize.height));
+
+    CGRect rect = CGRectMake(0,
+                             calView.calendarViewSize.height + self.navigationController.navigationBar.frame.size.height,
+                             SCREEN_WIDTH,
+                             self.view.frame.size.height -
+                             (self.navigationController.navigationBar.frame.size.height + self.navigationController.toolbar.frame.size.height + calView.calendarViewSize.height));
+//    tableView = [[UITableView alloc]initWithFrame:rect];
+
+    UIView *v = [[UIView alloc]initWithFrame:rect3];
+    v.backgroundColor = [UIColor redColor];
+    [self.view addSubview:v];
 }
 - (void)viewDidUnload
 {

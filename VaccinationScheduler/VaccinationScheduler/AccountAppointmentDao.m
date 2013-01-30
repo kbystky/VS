@@ -19,12 +19,11 @@
 
 - (NSArray *)appointmentsDataWithAccountId:(NSInteger)accountid{
     NSMutableArray *appointment = [[NSMutableArray alloc]init];
-
+    
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];
-//    NSString *sql = [NSString stringWithFormat:@"SELECT appointment,times,isSynced FROM %@%d;",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
-        NSString *sql = [NSString stringWithFormat:@"SELECT id,accountId,vaccinationId,times,appointmentDate,consultationDate,isSynced FROM appointment WHERE accountId = %d",accountid];
-
+    NSString *sql = [NSString stringWithFormat:@"SELECT id,accountId,vaccinationId,times,appointmentDate,consultationDate,isSynced FROM appointment WHERE accountId = %d",accountid];
+    
     //データ取得
     FMResultSet *results = [db executeQuery:sql];
     while([results next]){
@@ -34,7 +33,11 @@
         dto.vcId = [results intForColumnIndex:2];
         dto.times = [results intForColumnIndex:3];
         dto.appointmentDate = [results stringForColumnIndex:4];
-        dto.consultationDate = [results stringForColumnIndex:5];
+        if([dto.consultationDate isEqualToString:@"nodata"]){
+            dto.consultationDate = nil;
+        }else{
+            dto.consultationDate = [results stringForColumnIndex:5];
+        }
         dto.isSynced = [results boolForColumnIndex:6];
         [appointment addObject:dto];
     }
@@ -43,11 +46,75 @@
     return appointment;
 }
 
+-(BOOL)saveAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto{
+    FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
+    [db open];
+    
+    FUNK();
+    [self Logger:dto];
+    
+    if([dto.consultationDate isEqual:nil]){
+        dto.consultationDate = @"nodata";
+    }
+    
+    NSString *sql = @"INSERT INTO appointment (accountId,vaccinationId,times,appointmentDate,consultationDate,isSynced) VALUES (?,?,?,?,?,?);";
+    
+    BOOL result = [db executeUpdate:sql,
+                   [NSNumber numberWithInt:dto.accountId],
+                   [NSNumber numberWithInt:dto.vcId],
+                   [NSNumber numberWithInt:dto.times],
+                   dto.appointmentDate,
+                   dto.consultationDate,
+                   [NSNumber numberWithBool:dto.isSynced]];
+    
+    NSLog(@"result %d",result);
+    [db close];
+    return result;
+}
+
+//指定された予約の削除
+-(BOOL)removeAppointmentWithAppointmentId:(NSInteger)appointmentId
+{
+    FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
+    [db open];
+    
+    NSString  *sql = @"DELETE FROM appointment where id = ?";
+    BOOL result = [db executeUpdate:sql,[NSNumber numberWithInt:appointmentId]];
+    
+    [db close];
+    return result;
+}
+
+//アカウント削除時に対応するデータを削除する
+-(BOOL)removeAppointmentsWithAccoutId:(NSInteger)accountId
+{
+    FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
+    [db open];
+    
+    NSString  *sql = @"DELETE FROM appointment where accountId = ?";
+    BOOL result = [db executeUpdate:sql,[NSNumber numberWithInt:accountId]];
+    
+    [db close];
+    return result;
+}
+/*********** other **********/
+- (void)Logger:(AccountAppointmentDto *)dto
+{
+    NSLog(@"accountId %d",dto.accountId);
+    NSLog(@"vcId %d",dto.vcId);
+    NSLog(@"current times %d",dto.times);
+    NSLog(@"appointmentDate %@",dto.appointmentDate);
+    NSLog(@"consultationDate %@",dto.consultationDate);
+    NSLog(@"isSynced %d",dto.isSynced);
+    NSLog(@"vcDto %@",dto.vaccinationDto);
+}
+/*********** old ***********/
+
 -(NSInteger)timesWithAccountId:(NSInteger)accountid vaccinationName:(NSString *)name{
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];
     NSString *sql = [NSString stringWithFormat:@"SELECT times FROM %@%d where appointment = ?;",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
-    NSInteger times;    
+    NSInteger times;
     //データ取得
     FMResultSet *results = [db executeQuery:sql,name];
     while([results next]){
@@ -56,25 +123,7 @@
     [db close];
     return times;
 }
--(BOOL)saveAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto{
-    NSLog(@"accountId %d",dto.accountId);
-    NSLog(@"accountId %d",dto.vcId);
-    NSLog(@"accountId %d",dto.times);
-    NSLog(@"accountId %@",dto.appointmentDate);
-    NSLog(@"accountId %@",dto.consultationDate);
-    NSLog(@"accountId %d",dto.isSynced);
-    NSLog(@"accountId %@",dto.vaccinationDto);
-}
--(BOOL)saveAppointmentWithDate:(NSString *)date vaccinationName:(NSString *)name times:(NSInteger)times accountId:(NSInteger)accountid{
-    FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
-    [db open];
-    
-    NSString  * sql = [NSString stringWithFormat:@"INSERT INTO %@%d (appointment,date,times,isSynced) VALUES (?,?,?,?);",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
-    
-    BOOL result = [db executeUpdate:sql,name,date,[NSNumber numberWithInt:times+1],[NSNumber numberWithBool:NO]];
-    [db close];
-    return result;
-}
+
 
 -(NSString *)dateWithAccountId:(NSInteger)accountid vaccinationName:(NSString *)name times:(NSInteger)times{
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
@@ -90,18 +139,6 @@
     return date;
 }
 
--(BOOL)deleteWithAccountId:(NSInteger)accountid{
-    
-    FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
-    [db open];
-    BOOL result;
-    NSString  * sql = [NSString stringWithFormat:@"DELETE FROM %@%d",KEY_ACCOUNT_NUMBER_PREFIX,accountid];
-    
-    result = [db executeUpdate:sql];
-    [db close];
-    return result;
-    
-}
 
 -(BOOL)allDelete{
     

@@ -24,7 +24,6 @@
     NSString *vaccinationName;
     AccountInfoDto *accountInfoDto;
     NSInteger type;
-    NSInteger selectAppointmentIndex;
 }
 @property (strong, nonatomic) IBOutlet UILabel *vaccinationNameLabel;
 @property (strong, nonatomic) IBOutlet UILabel *totalTimesLabel;
@@ -44,51 +43,28 @@
 @synthesize datePicker = _datePicker;
 
 #pragma mark *****************  Initialize ******************
--(id)initWithAccountId:(NSInteger)_accountId vaccinationName:(NSString *)name{
-    self = [super init];
-    if(self){
-        accountId = _accountId;
-        FUNK();
-        NSLog(@"account id %d",accountId);
-        vaccinationName = name;
-    }
-    return self;
-}
-
--(id)initWithAccountId:(NSInteger)_accountId vaccinationDto:(VaccinationDto *)dto
-{
-    self = [super init];
-    if(self){
-        accountId = _accountId;
-        FUNK();
-        NSLog(@"account id %d",accountId);
-        vaccinationDto = dto;
-    }
-    return self;
-}
-
--(id)initWithAccountInfoDto:(AccountInfoDto *)_accountInfoDto vaccinationDto:(VaccinationDto *)dto editType:(NSInteger)_type
+-(id)initWithAccountInfoDto:(AccountInfoDto *)_accountInfoDto vaccinationDto:(VaccinationDto *)_vaccinationDto editType:(NSInteger)_type
 {
     self = [super init];
     if(self){
         FUNK();
         accountInfoDto = _accountInfoDto;
-        vaccinationDto = dto;
+        vaccinationDto = _vaccinationDto;
         type =_type;
         NSLog(@"account id %d",accountInfoDto.accountId);
     }
     return self;
 }
 
--(id)initWithAccountInfoDto:(AccountInfoDto *)_accountInfoDto vaccinationDto:(VaccinationDto *)dto selectAppointmentIndex:(NSInteger)index editType:(int)_type
+-(id)initWithAccountInfoDto:(AccountInfoDto *)_accountInfoDto vaccinationDto:(VaccinationDto *)_vaccinationDto appointmentDto:(AccountAppointmentDto *)_appointmentDto editType:(int)_type
 {
     self = [super init];
     if(self){
         FUNK();
         accountInfoDto = _accountInfoDto;
-        vaccinationDto = dto;
+        vaccinationDto = _vaccinationDto;
+        appointmentDto = _appointmentDto;
         type =_type;
-        selectAppointmentIndex = index;
         NSLog(@"account id %d",accountInfoDto.accountId);
     }
     return self;
@@ -127,19 +103,20 @@
 #pragma mark *****************  View Setting ******************
 -(void)viewSetting{
     self.vaccinationNameLabel.text = vaccinationDto.name;
-    
+    self.totalTimesLabel.text = [NSString stringWithFormat:@"%d",vaccinationDto.needTimes];
+    FUNK();
     if(type == TYPE_EDIT){
-        AccountAppointmentDto *dto = [accountInfoDto.appointmentDto objectAtIndex:selectAppointmentIndex];
-//        self.vaccinationNameLabel.text = dto.;
+        //予約編集
+        NSLog(@"EDIT TYPE");
 
         //TODO:これまでの受診回数を表示でいいかな？
         NSInteger appointmentTimes = [self countOfConsultationTimes];
         NSLog(@"appointmenttimes %d",appointmentTimes);
         self.finishTimesLable.text = [NSString stringWithFormat:@"%d",appointmentTimes];
-        
-        //TODO:選択されたappointのindexからappointDtoを抽出しviewに反映
+        //やっぱ何回目の受診かを表示の方が良いね
 
-        self.appointmentDayTextField.text =@"sample";
+        self.appointmentDayTextField.text =appointmentDto.appointmentDate;
+
     }else if (type == TYPE_CREATE){
         //新規予約作成
         //これまでの受診回数を表示
@@ -148,27 +125,24 @@
         self.finishTimesLable.text = [NSString stringWithFormat:@"%d",appointmentTimes];
     }
 }
+
 - (IBAction)addAppointment:(id)sender {
-    //    AccountAppointmentDao *appointmentDao = [[AccountAppointmentDao alloc]init];
     
     // 予約日が入力済みなら登録する
     if(self.appointmentDayTextField.text.length != 0){
         //登録
         AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
-        [service saveAppointmentWithAccountId:accountId
+        [service saveAppointmentWithAccountId:accountInfoDto.accountId
                                         times:[self.finishTimesLable.text intValue]
                               appointmentDate:self.appointmentDayTextField.text
                              consultationDate:nil
                                vaccinationDto:vaccinationDto];
         
         //notificationに登録
-        LocalNotificationManager *manager = [[LocalNotificationManager alloc]init];
-        [manager createNotificationWithRecordDate:self.appointmentDayTextField.text accountId:accountId];
+//        LocalNotificationManager *manager = [[LocalNotificationManager alloc]init];
+//        [manager createNotificationWithRecordDate:self.appointmentDayTextField.text accountId:accountId];
         
         [self.navigationController popViewControllerAnimated:YES];
-        
-        //        [appointmentDao saveAppointmentWithDate:self.appointmentDayTextField.text vaccinationName:self.vaccinationNameLabel.text times:[self.finishTimesLable.text intValue] accountId:accountId];
-        
     }else{
         [[AlertBuilder createAlertWithType:ALERTTYPE_DEMAND_FILLINFO] show];
     }
@@ -233,12 +207,12 @@
     FUNK();
     NSInteger times = 0;
     for(AccountAppointmentDto *dto in accountInfoDto.appointmentDto){
-        NSLog(@"appoID : %d  vacciID : %d",dto.vcId,vaccinationDto.vcId);
+        //NSLog(@"appoID : %d  vacciID : %d",dto.vcId,vaccinationDto.vcId);
         if(dto.vcId == vaccinationDto.vcId){
             times++;
         }
     }
-    
     return times;
 }
+
 @end

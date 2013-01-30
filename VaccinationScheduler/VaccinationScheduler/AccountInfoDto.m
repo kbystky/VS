@@ -46,7 +46,7 @@
 {
     [aCoder encodeObject:self.name forKey:NAME];
     [aCoder encodeInteger:self.accountId forKey:ID];
-    [aCoder encodeObject:self.name forKey:BIRTHDAY];
+    [aCoder encodeObject:self.birthDay forKey:BIRTHDAY];
 }
 
 @end

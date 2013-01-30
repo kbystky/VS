@@ -7,10 +7,12 @@
 //
 
 #import <Foundation/Foundation.h>
-@class VaccinationDto;
+@class VaccinationDto,AccountAppointmentDto;
 @interface AccountAppointmentService : NSObject
 
 -(id)init;
 - (NSArray *)appointmentsDtoWithAccountId:(NSInteger)accountid;
 - (void)saveAppointmentWithAccountId:(NSInteger)accountid times:(NSInteger)times  appointmentDate:(NSString *)appointmentDate  consultationDate:(NSString *)consultationDate vaccinationDto:(VaccinationDto *)vcDto;
+- (void)removeAppointmentWithAppointmentDto:(AccountAppointmentDto *)dto;
+- (void)removeAppointmentWithAccountId:(NSInteger)accountId;
 @end

@@ -13,6 +13,8 @@
 #import "StringConst.h"
 #import "DateFormatter.h"
 #import "AccountInfoDto.h"
+#import "AccountAppointmentService.h"
+
 @interface AccountViewController ()
 {
     NSInteger selectedAccountId;
@@ -51,16 +53,7 @@
 
 //TODO:編集用にDtoも受け取る必要があry
 #pragma mark ************  Initialize *************
--(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountId:(NSInteger)accountId{
-    self = [super init];
-    if(self){
-        manager = [[UserDefaultsManager alloc]init];
-        self.previousViewControllerType =vcType;
-        self.editType = editType;
-        selectedAccountId = accountId;
-    }
-    return self;
-}
+
 -(id)initWithViewControllerType:(NSInteger)vcType editType:(NSInteger)editType accountInfo:(AccountInfoDto *)accountInfo{
     self = [super init];
     if(self){
@@ -81,9 +74,7 @@
     self.nameTextFiled.returnKeyType = UIReturnKeyDone;
     self.birthDayTextField.delegate = self;
     if(self.editType == EDITTYPE_EDIT){
-        [self setParamToTextFiled];
-        [self.cancelButton setTitle:@"削除" forState:UIControlStateNormal];
-        self.title = @"アカウント";
+        [self viewSetting];
     }
 }
 
@@ -104,32 +95,28 @@
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
 //TODO: 新規作成と編集の処理を分ける必要あり
+#pragma mark *****************  View Setting ******************
+- (void)viewSetting
+{
+    // button setting
+    [self.cancelButton setTitle:@"削除" forState:UIControlStateNormal];
+    self.title = @"アカウント";
+    
+    // textfield setting
+    [self setParamToTextFiled];
+}
 #pragma mark ************  Action *************
-- (IBAction)tapFinishButton:(id)sender {
+- (IBAction)tapFinishButton:(id)sender
+{
     if(self.nameTextFiled.text.length == 0 || self.birthDayTextField.text.length == 0){
         UIAlertView *alert = [AlertBuilder createAlertWithType:ALERTTYPE_DEMAND_FILLACCOUNTINFO];
         [alert show];
         return;
     }
     
-    //新規作成
+    AccountInfoDto *dto = [[AccountInfoDto alloc]initWithAccountId:self.accountInfoDto.accountId name:self.nameTextFiled.text birthDay:self.birthDayTextField.text];
+    [manager saveAccount:dto];
     
-    if(self.editType == EDITTYPE_CREATE){
-        //del
-        //        [manager createAccountWithName:self.nameTextFiled.text
-        //                              birthDay:self.birthDayTextField.text];
-        
-        AccountInfoDto *dto = [[AccountInfoDto alloc]initWithAccountId:0 name:self.nameTextFiled.text birthDay:self.birthDayTextField.text];
-        [manager saveAccount:dto];
-    }else{
-        //        //編集
-        //        NSArray *obj = [NSArray arrayWithObjects:[NSNumber numberWithInt:self.accountInfo.accountId],self.nameTextFiled.text,self.birthDayTextField.text, nil];
-        //        NSArray *key = [NSArray arrayWithObjects:KEY_ID, KEY_NAME,KEY_BIRTHDAY,nil];
-        //        NSDictionary *info = [NSDictionary dictionaryWithObjects:obj
-        //                                                         forKeys:key];
-        //        [manager saveAccountWithAccountInfo:info];
-        
-    }
     //delegateメソッドを呼ぶ
     [self.delegate dismissAccountViewController:self];
 }
@@ -144,7 +131,6 @@
         
     }else if(self.editType == EDITTYPE_CREATE){
         [self.delegate dismissAccountViewController:self];
-        
     }
 }
 
@@ -213,14 +199,17 @@
     if(alertView.tag == ALERTTYPE_CHECK_DELETE && buttonIndex == BUTTON_INDEX_OK){
         //アカウント削除
         [manager removeAccount:self.accountInfoDto];
+
+        AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
+        [service removeAppointmentWithAccountId:self.accountInfoDto.accountId];
         
-        AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
+//        AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
         //
         //        NSDictionary *account  =      [self.accountInfoDto objectForKey:self.nameTextFiled.text] ;
         //        NSInteger accountId = [[account objectForKey:KEY_ID] intValue];
         //        [dao deleteWithAccountId:accountId];
         
-        [dao deleteWithAccountId:self.accountInfoDto.accountId];
+//        [dao deleteWithAccountId:self.accountInfoDto.accountId];
         
         //[[UserDefaultsManager alloc]init] accountWithName:[self.accountInfo objectForKey:self.nameTextFiled.text] objectForKey:[UserDefaultsManager KEY_ID_INT]intValue]
         //delegateメソッドを呼ぶ
@@ -230,9 +219,7 @@
 
 #pragma mark ************  other *************
 -(void)setParamToTextFiled{
-    //    self.nameTextFiled.text = [self.accountInfo objectForKey:KEY_NAME];
-    //    self.birthDayTextField.text = [self.accountInfo objectForKey:KEY_BIRTHDAY];
     self.nameTextFiled.text = self.accountInfoDto.name;
-    self.birthDayTextField.text =self.accountInfoDto.birthDay;
+    self.birthDayTextField.text = self.accountInfoDto.birthDay;
 }
 @end

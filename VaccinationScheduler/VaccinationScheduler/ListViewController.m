@@ -296,6 +296,7 @@ typedef enum{
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
     //アカウントの強制作成
     if(alertView.tag == ALERTTYPE_CREATEACCOUNTFORCIBLY){
+        appointmentsDto = nil;
         [self presentModalViewController:[self createAccountVCInstanceWithEditType:EDITTYPE_CREATE accountInfo:nil] animated:YES];
     }
 }
@@ -335,38 +336,39 @@ typedef enum{
         cell.textLabel.text = dto.name;
         
     }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
-        
         AccountAppointmentDto *dto = [listDatasource objectAtIndex:indexPath.row];
         cell.textLabel.text = dto.vaccinationDto.name;
-        
+        NSLog(@"index path %d label :%@",indexPath.row ,dto.vaccinationDto.name);
     }
     return cell;
 }
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
+    NSInteger type = 0;
     DetailListViewController *detailListViewController;
-//    if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
-//        //詳細画面に遷移
-//        currentAccountInfoDto.appointmentDto = [[NSArray alloc]initWithArray:appointmentsDto];
-//        detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:[listDatasource objectAtIndex:indexPath.row] editType:TYPE_CREATE];
-//                
-//    }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
-//
-//        currentAccountInfoDto.appointmentDto = [[NSArray alloc]initWithArray:appointmentsDto];
-//        detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:[[listDatasource objectAtIndex:indexPath.row] vaccinationDto] editType:TYPE_EDIT];
-//    }
-
-    NSInteger type = TYPE_CREATE;
-//    if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
-//        type = TYPE_CREATE;
-//    }else
-        if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
-        type = TYPE_EDIT;
-    }
-
     currentAccountInfoDto.appointmentDto = [[NSArray alloc]initWithArray:appointmentsDto];
-    detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:[listDatasource objectAtIndex:indexPath.row] editType:type];
+    
+    if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
+        type = TYPE_EDIT;
+        
+        //選択されたappDtoからvaccinationDto を生成し引数に渡す
+        AccountAppointmentDto *selectedDto = [listDatasource objectAtIndex:indexPath.row];
+        VaccinationDto *dto;
+        for(VaccinationDto *d in vaccinationsDto){
+            if(d.vcId == selectedDto.vcId){
+                dto = d;
+                break;
+            }
+        }
+        detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:dto appointmentDto:[listDatasource objectAtIndex:indexPath.row] editType:type];
+
+    }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
+        type = TYPE_CREATE;
+        
+        detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:[listDatasource objectAtIndex:indexPath.row] editType:type];
+    }
+    
     
     [self.navigationController pushViewController:detailListViewController animated:YES];
 }

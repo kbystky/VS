@@ -27,6 +27,7 @@ typedef enum{
 @interface SettingViewController ()
 {
     NSArray *accountDataSource;
+    UserDefaultsManager *manager;
 }
 
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
@@ -36,6 +37,15 @@ typedef enum{
 @implementation SettingViewController
 @synthesize tableView;
 @synthesize delegate = _delegate;
+- (id)init
+{
+    self = [super init];
+    
+    if(self != nil){
+        manager = [[UserDefaultsManager alloc]init];
+    }
+    return self;
+}
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -81,10 +91,7 @@ typedef enum{
 #pragma mark navigation bar
 -(void)createNavigationBarItem
 {
-    //アカウントの名前をtitileにセット
     self.navigationItem.title = @"設定";
-    
-    //設定ボタン
     UIBarButtonItem *settingButton = [[UIBarButtonItem alloc]initWithTitle:@"完了" 
                                                                      style:UIBarButtonItemStyleBordered
                                                                     target:self
@@ -95,10 +102,9 @@ typedef enum{
 
 -(void)createDataSource
 {
-    accountDataSource = [[UserDefaultsManager alloc]init].allAccount;
+    accountDataSource = manager.allAccount;
 }
 - (IBAction)tapBack:(id)sender {
-    
     //delegateメソッドを呼ぶ
     [self.delegate dismissSettingViewController:self];
 }
@@ -112,7 +118,7 @@ typedef enum{
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     if(section == SECTION_ACCOUNT){
-        return  [[UserDefaultsManager alloc]init].numberOfAccount;
+        return  manager.numberOfAccount;
     }
     if(section == SECTION_GCAL_SYNC){
         return 1;
@@ -129,8 +135,8 @@ typedef enum{
     if(indexPath.section == SECTION_ACCOUNT){
         AccountSettingCell *acCell = [[AccountSettingCell alloc]init];
         //del
-        NSDictionary *account = [accountDataSource objectAtIndex:indexPath.row];
-        acCell.textLabel.text = [account objectForKey:KEY_NAME];
+//        NSDictionary *account = [accountDataSource objectAtIndex:indexPath.row];
+//        acCell.textLabel.text = [account objectForKey:KEY_NAME];
 
         AccountInfoDto *dto = [accountDataSource objectAtIndex:indexPath.row];
         acCell.textLabel.text = dto.name;

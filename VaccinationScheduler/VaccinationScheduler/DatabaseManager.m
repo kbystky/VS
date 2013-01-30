@@ -63,7 +63,7 @@
     
 
     // initialize vc table
-    /*
+  //  /*
      sql = @"CREATE TABLE IF NOT EXISTS  vaccination ( id INTEGER PRIMARY KEY AUTOINCREMENT , name TEXT, needTimes INTEGER , period INTEGER);";
      NSLog(@"create %d",[db executeUpdate:sql]);
      sql = @"INSERT INTO vaccination (name , needTimes , period) VALUES (?,?,?);";
@@ -78,7 +78,7 @@
      [db executeUpdate:sql,@"おたふくかぜワクチン",[NSNumber numberWithInt:2],[NSNumber numberWithInt:60]];
      [db executeUpdate:sql,@"水痘ワクチン",[NSNumber numberWithInt:2],[NSNumber numberWithInt:60]];
      [db executeUpdate:sql,@"インフルエンザワクチン",[NSNumber numberWithInt:2],[NSNumber numberWithInt:60]];
-     */
+//     */
     [db close];
 }
 @end

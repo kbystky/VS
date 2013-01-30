@@ -8,11 +8,15 @@
 
 #import "CalendarView.h"
 #import <QuartzCore/QuartzCore.h>
+
+#define DAYOFWEEK_VIEW_HEIGHT 28
 @interface CalendarView()
 {
     NSMutableArray *dayArray;
     UILabel*oneDayView;
     UIView *dayOfWeekBaseView;
+
+    CGFloat dayViewHeight;
 }
 @property (weak, nonatomic) IBOutlet UIButton *previousMonthButton;
 @property (weak, nonatomic) IBOutlet UIButton *nextMonthButton;
@@ -33,14 +37,13 @@
     if (self){
         dayArray =[[NSMutableArray alloc]initWithCapacity:10];
         NSLog(@"def height %f",self.frame.size.height);
-
         [self createDayOfWeekView];
     }
     return self;
 }
 
 -(void)createDayOfWeekView{
-    dayOfWeekBaseView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, 28)];
+    dayOfWeekBaseView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, DAYOFWEEK_VIEW_HEIGHT)];
     
     CGFloat x = 0;
     CGFloat y = 0;
@@ -78,8 +81,8 @@
     CGFloat y = dayOfWeekBaseView.frame.size.height;
     CGFloat cellSize = SCREEN_WIDTH/7.0;
     //週のviewを追加する分、calVIewのサイズを大きくする
-    self.frame= CGRectMake(0, 0, self.frame.size.width, numberOfWeek * cellSize +28);  
-
+    dayViewHeight = numberOfWeek * cellSize +DAYOFWEEK_VIEW_HEIGHT;
+    self.frame= CGRectMake(0, 0, self.frame.size.width, dayViewHeight);
     int colum = 0;
     
     //先月、今月、来月をarrayindexで識別
@@ -159,6 +162,10 @@
     }
 }
 
+-(CGSize)calendarViewSize
+{
+    return CGSizeMake(SCREEN_WIDTH, dayViewHeight + DAYOFWEEK_VIEW_HEIGHT);
+}
 
 
 @end
