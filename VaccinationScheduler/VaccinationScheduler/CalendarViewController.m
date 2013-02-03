@@ -10,7 +10,7 @@
 #import "AppDelegate.h"
 #import "Calendar.h"
 #import "CalendarView.h"
-
+#import "AccountAppointmentService.h"
 @interface CalendarViewController ()
 {
     NSInteger selectedDay;
@@ -20,6 +20,7 @@
     CalendarView* calView;
     NSMutableDictionary *selectedDayInfo;
     UITableView *tableView;
+    NSArray *monthArray;
 }
 @property (strong,nonatomic) UISegmentedControl *segmentC;
 @end
@@ -51,37 +52,51 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
     [self navigationControllerSetting];
     [self navigationBarSetting];
     [self toolbarSetting];
-    calView.backgroundColor = [UIColor blueColor];
-    NSLog(@"height %f width %f",[calView calendarViewSize].height,[calView calendarViewSize].width);
-    NSLog(@"height %f %f %f",
-          self.view.frame.size.height,
-          self.navigationController.navigationBar.frame.size.height,
-          self.navigationController.toolbar.frame.size.height);
-    CGFloat tmp = self.view.frame.size.height - (calView.calendarViewSize.height - self.navigationController.navigationBar.frame.size.height);
-    NSLog(@"tmp %f",tmp);
-    CGRect rect3 = CGRectMake(0,
-                              calView.calendarViewSize.height,
-                              SCREEN_WIDTH,
-                              self.view.frame.size.height - calView.calendarViewSize.height
-                              );
-
-    CGRect rect2 = CGRectMake(0,
-                              calView.calendarViewSize.height,
-                              SCREEN_WIDTH,
-                              self.view.frame.size.height -
-                              (calView.calendarViewSize.height));
-
-    CGRect rect = CGRectMake(0,
-                             calView.calendarViewSize.height + self.navigationController.navigationBar.frame.size.height,
-                             SCREEN_WIDTH,
-                             self.view.frame.size.height -
-                             (self.navigationController.navigationBar.frame.size.height + self.navigationController.toolbar.frame.size.height + calView.calendarViewSize.height));
-//    tableView = [[UITableView alloc]initWithFrame:rect];
-
-    UIView *v = [[UIView alloc]initWithFrame:rect3];
-    v.backgroundColor = [UIColor redColor];
-    [self.view addSubview:v];
-}
+    /*********************************/
+    /** data table view setting **/
+    /*
+     calView.backgroundColor = [UIColor blueColor];
+     NSLog(@"height %f width %f",[calView calendarViewSize].height,[calView calendarViewSize].width);
+     NSLog(@"height %f %f %f",
+     self.view.frame.size.height,
+     self.navigationController.navigationBar.frame.size.height,
+     self.navigationController.toolbar.frame.size.height);
+     CGFloat tmp = self.view.frame.size.height - (calView.calendarViewSize.height - self.navigationController.navigationBar.frame.size.height);
+     NSLog(@"tmp %f",tmp);
+     CGRect rect3 = CGRectMake(0,
+     calView.calendarViewSize.height,
+     SCREEN_WIDTH,
+     self.view.frame.size.height - calView.calendarViewSize.height
+     );
+     
+     CGRect rect2 = CGRectMake(0,
+     calView.calendarViewSize.height,
+     SCREEN_WIDTH,
+     self.view.frame.size.height -
+     (calView.calendarViewSize.height));
+     
+     CGRect rect = CGRectMake(0,
+     calView.calendarViewSize.height + self.navigationController.navigationBar.frame.size.height,
+     SCREEN_WIDTH,
+     self.view.frame.size.height -
+     (self.navigationController.navigationBar.frame.size.height + self.navigationController.toolbar.frame.size.height + calView.calendarViewSize.height));
+     //    tableView = [[UITableView alloc]initWithFrame:rect];
+     
+     UIView *v = [[UIView alloc]initWithFrame:rect3];
+     v.backgroundColor = [UIColor redColor];
+     [self.view addSubview:v];
+     */
+    /*********************************/
+    /*    monthArray = [cal monthDays];
+    NSString *startDate = [[monthArray objectAtIndex:0] objectAtIndex:0];
+    
+    NSArray *nextMonth = [monthArray objectAtIndex:monthArray.count - 1];
+    NSString *endDate =  [nextMonth objectAtIndex:nextMonth.count - 1];
+    
+    AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
+    [service monthDataWithStartYMD:startDate endYM:endDate];
+*/
+ }
 - (void)viewDidUnload
 {
     [super viewDidUnload];
@@ -124,7 +139,7 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
                                initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
                                target:nil action:nil];
     
-    //SegmentedControl 
+    //SegmentedControl
     NSArray *array = [[NSArray alloc]initWithObjects:@"カレンダー",@"リスト", nil];
     self.segmentC = [[UISegmentedControl alloc]initWithItems:array];
     self.segmentC.frame = CGRectMake(0, 0, 150, 30);
@@ -162,9 +177,14 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
     self.navigationItem.title =  [NSString stringWithFormat:@"%d年 %d月",cal.year,cal.month];
     
     //日付のビューを生成
-    [calView createDayViewWithMonthDays:[cal monthDays] 
-                           numberOfWeek:[cal numberOfWeekWithMonth:cal.month inYear:cal.year] 
+    [calView createDayViewWithMonthDays:[cal monthDays]
+                           numberOfWeek:[cal numberOfWeekWithMonth:cal.month inYear:cal.year]
              actionTargetWhenViewTapped:self];
+
+    NSArray *firstAndEndDate = [cal firstDateAndEndDateWithYear:cal.year month:cal.month];
+    NSLog(@"first %@ , end %@",[firstAndEndDate objectAtIndex:0],[firstAndEndDate objectAtIndex:1]);
+    AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
+    [service monthDataWithStartYMD:[firstAndEndDate objectAtIndex:0] endYM:[firstAndEndDate objectAtIndex:1]];
     
 }
 
@@ -173,7 +193,8 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
     UILabel *v = (UILabel *) g.view;
     
     //選択日かどうか
-    if([cal isTapSelectedDayWithTapDayInfo:[NSDictionary dictionaryWithObject:v.text forKey:[NSNumber numberWithInt:v.tag]]
+    if([cal isTapSelectedDayWithTapDayInfo:[NSDictionary dictionaryWithObject:v.text
+                                                                       forKey:[NSNumber numberWithInt:v.tag]]
                            selectedDayInfo:selectedDayInfo]){
         
         //選択されていた部分を戻す

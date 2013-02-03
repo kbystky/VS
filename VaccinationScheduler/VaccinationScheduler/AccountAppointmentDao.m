@@ -58,15 +58,14 @@
     }
     
     NSString *sql = @"INSERT INTO appointment (accountId,vaccinationId,times,appointmentDate,consultationDate,isSynced) VALUES (?,?,?,?,?,?);";
-    
     BOOL result = [db executeUpdate:sql,
                    [NSNumber numberWithInt:dto.accountId],
                    [NSNumber numberWithInt:dto.vcId],
                    [NSNumber numberWithInt:dto.times],
-                   dto.appointmentDate,
-                   dto.consultationDate,
+                   [dto appointmentDate],
+                   [dto consultationDate],
                    [NSNumber numberWithBool:dto.isSynced]];
-    
+
     NSLog(@"result %d",result);
     [db close];
     return result;

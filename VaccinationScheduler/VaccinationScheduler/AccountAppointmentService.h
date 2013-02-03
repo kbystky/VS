@@ -15,4 +15,7 @@
 - (void)saveAppointmentWithAccountId:(NSInteger)accountid times:(NSInteger)times  appointmentDate:(NSString *)appointmentDate  consultationDate:(NSString *)consultationDate vaccinationDto:(VaccinationDto *)vcDto;
 - (void)removeAppointmentWithAppointmentDto:(AccountAppointmentDto *)dto;
 - (void)removeAppointmentWithAccountId:(NSInteger)accountId;
+
+// for cal
+- (NSArray *)monthDataWithStartYMD:(NSString *)startYmd endYM:(NSString *)endYmd;
 @end

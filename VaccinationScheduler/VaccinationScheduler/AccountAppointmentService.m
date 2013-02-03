@@ -12,6 +12,7 @@
 
 #import "VaccinationDao.h"
 #import "VaccinationDto.h"
+#import "DateFormatter.h"
 
 @interface AccountAppointmentService()
 {
@@ -101,8 +102,13 @@ AccountAppointmentDao *dao = nil;
 /** for calendar **/
 - (NSArray *)monthDataWithStartYMD:(NSString *)startYmd endYM:(NSString *)endYmd
 {
-    NSMutableArray *data = [[NSMutableArray alloc]init];
-    //　始まりの日から終わりの日までの期間中のデータを取得する。
+    FUNK();
+    NSLog(@"\nstring  start : %@ \nend : %@",startYmd,endYmd);
+    
+    //date に変換
+    NSDate *startDate = [DateFormatter dateFormatWithString:startYmd];
+    NSDate *endDate = [DateFormatter dateFormatWithString:endYmd];
+    NSLog(@"\nstart : %@ \nend : %@",startDate,endDate);
     
     //過去未来の比較でいけるかも
     //http://cheesememo.blog39.fc2.com/blog-entry-329.htmlもあやしい
@@ -121,7 +127,7 @@ AccountAppointmentDao *dao = nil;
      //2000-03-01 00:00:00 +0900, 2000-03-03 00:00:00 +0900 -> 2000-03-01 00:00:00 +0900
      //2000-03-01 00:00:00 +0900, 2000-03-03 00:00:00 +0900 -> 2000-03-03 00:00:00 +0900
      */
-    return data;
+    return [NSArray array];
 }
 
 

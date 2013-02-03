@@ -13,20 +13,23 @@
     NSCalendar *cal;
     NSInteger year;
     NSInteger month;
-    NSInteger thisYear;
-    NSInteger thisMonth;
+//    NSInteger thisYear;
+//    NSInteger thisMonth;
 }
 @property NSInteger year;
 @property NSInteger month;
-@property NSInteger thisYear;
-@property NSInteger thisMonth;
-@property NSInteger thisDay;
+//@property NSInteger thisYear;
+//@property NSInteger thisMonth;
+//@property NSInteger thisDay;
 
 /************** initialize **************/
 -(id)init;
 /************** Utility For Create Calender **************/
 -(NSInteger)numberOfWeekWithMonth:(NSInteger)m inYear:(NSInteger)y;
 -(NSArray *)monthDays;
+
+-(NSArray *)firstDateAndEndDateWithYear:(int)_year month:(int)_month;
+
 /************** cal Action **************/
 -(void)tapDayWithDayInfo:(NSDictionary*)info;
 -(BOOL)isTapSelectedDayWithTapDayInfo:(NSDictionary *)tapDayInfo selectedDayInfo:(NSDictionary *)selectedDayInfo;

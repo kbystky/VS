@@ -7,6 +7,7 @@
 //
 
 #import "Calendar.h"
+#import "DateFormatter.h"
 
 @interface Calendar()
 @end
@@ -15,9 +16,9 @@
 
 @synthesize year;
 @synthesize month;
-@synthesize thisYear;
-@synthesize thisMonth;
-@synthesize thisDay;
+//@synthesize thisYear;
+//@synthesize thisMonth;
+//@synthesize thisDay;
 
 #pragma mark ************** initialize **************
 -(id)init{
@@ -44,13 +45,13 @@
     NSDate *today = [NSDate dateWithTimeIntervalSinceNow:[[NSTimeZone systemTimeZone] secondsFromGMT]];
     
     NSUInteger flags = NSYearCalendarUnit | NSMonthCalendarUnit |NSDayCalendarUnit | NSHourCalendarUnit |NSMinuteCalendarUnit;
-    NSDateComponents *comps=[cal components:flags fromDate:today]; 
+    NSDateComponents *comps=[cal components:flags fromDate:today];
     
     year = [comps year];
     month = [comps month];
-    thisYear = [comps year];
-    thisMonth = [comps month];
-    thisDay = [comps day];
+    //    thisYear = [comps year];
+    //    thisMonth = [comps month];
+    //    thisDay = [comps day];
 }
 
 #pragma mark ************** Utility For Create Calender **************
@@ -76,8 +77,8 @@
 -(NSInteger)weekDayOfLastDayWithMonth:(NSInteger)m inYear:(NSInteger)y{
     FUNK();
     
-    NSDateComponents *weekDayCom = 
-    [cal components:NSWeekdayCalendarUnit 
+    NSDateComponents *weekDayCom =
+    [cal components:NSWeekdayCalendarUnit
            fromDate:[self lastDayOfMonthWithMonth:m inYear:y]];
     
     NSLog(@"%d年%d月の月末の曜日は：%d",y,m,[weekDayCom weekday]);
@@ -108,7 +109,7 @@
     
     NSDate *theDay = [cal dateFromComponents:com];
     NSRange range = [cal rangeOfUnit:NSDayCalendarUnit
-                              inUnit:NSMonthCalendarUnit 
+                              inUnit:NSMonthCalendarUnit
                              forDate:theDay];
     NSLog(@"%d年%d月の日数は：%d",y,m,range.length);
     return range.length;
@@ -126,8 +127,7 @@
     NSDate *theDay = [cal dateFromComponents:com];
     
     NSUInteger flags =NSDayCalendarUnit | NSHourCalendarUnit |NSMinuteCalendarUnit;
-    NSDateComponents *comps=[cal components:flags fromDate:theDay]; 
-    
+    NSDateComponents *comps=[cal components:flags fromDate:theDay];
     return [comps day];
 }
 
@@ -141,7 +141,7 @@
     NSInteger weekDayOfFirstDay=[self weekDayOfFirstDayWithMonth:month inYear:year];
     for(int i = 1;i  < weekDayOfFirstDay;i++){
         colum++;
-    }        
+    }
     
     int dayOfMonth= [self numberOfDayOfMonth:month inYear:year];
     for(NSInteger i = 1;i <dayOfMonth;i++){
@@ -154,6 +154,70 @@
     return numberOfWeek;
 }
 
+-(NSArray *)firstDateAndEndDateWithYear:(int)_year month:(int)_month
+{
+    FUNK();
+    int thisYear = _year;
+    int thisMonth = _month;
+    
+    // first
+    int firstYear = 0;
+    int firstMonth = 0;
+    int firstDay = 0;
+    
+    // D
+    NSInteger weekDayOfFirstDay=[self weekDayOfFirstDayWithMonth:month inYear:year];
+    NSInteger lastMonthDay = [self getLastMonthDay];
+    firstDay = lastMonthDay - weekDayOfFirstDay + 2;
+    if(firstDay < 31){
+        // YM
+        if(thisMonth == 1){
+            firstYear = thisYear - 1;
+            firstMonth = 12;
+        }else{
+            firstYear = thisYear;
+            firstMonth = thisMonth - 1;
+        }
+        
+    }else{
+        firstDay = 1;
+        // YM
+        firstYear = thisYear;
+        firstMonth = thisMonth;
+    }
+    
+    // last
+    int endYear = 0;
+    int endMonth = 0;
+    int endDay = 0;
+    // D
+    NSInteger weekDayOfLastDay=[self weekDayOfLastDayWithMonth:month inYear:year];
+    for(int i = weekDayOfLastDay+1;i  < 8;i++){
+        endDay++;
+    }
+    if(endDay != 0){
+        // YM
+        if(thisMonth == 12){
+            endYear = thisYear + 1;
+            endMonth = 1;
+        }else{
+            endYear = thisYear;
+            endMonth = thisMonth + 1;
+        }
+    }else{
+        // YM
+        endYear = thisYear;
+        endMonth = thisMonth;
+        
+        endDay = [self numberOfDayOfMonth:endMonth inYear:endYear];
+        
+    }
+    
+    NSString *firstDate = [NSString stringWithFormat:@"%d/%d/%d",firstYear,firstMonth,firstDay];
+    
+    NSString *endDate = [NSString stringWithFormat:@"%d/%d/%d",endYear,endMonth,endDay];
+    return [[NSArray alloc]initWithObjects:firstDate,endDate,nil];
+}
 #pragma mark ************** create this month days **************
 
 //今月の日付一覧を生成
@@ -162,10 +226,10 @@
     
     int colum = 1;
     
-    NSMutableArray *array = [[NSMutableArray alloc]initWithCapacity:10];
-    NSMutableArray *dayOfPreviousMonth = [[NSMutableArray alloc]initWithCapacity:10];
-    NSMutableArray *dayOfThisMonth = [[NSMutableArray alloc]initWithCapacity:10];
-    NSMutableArray *dayOfNextMonth = [[NSMutableArray alloc]initWithCapacity:10];
+    NSMutableArray *array = [[NSMutableArray alloc]init];
+    NSMutableArray *dayOfPreviousMonth = [[NSMutableArray alloc]init];
+    NSMutableArray *dayOfThisMonth = [[NSMutableArray alloc]init];
+    NSMutableArray *dayOfNextMonth = [[NSMutableArray alloc]init];
     
     //今月の表示に含まれる先月分を取得
     NSInteger weekDayOfFirstDay=[self weekDayOfFirstDayWithMonth:month inYear:year];
@@ -173,9 +237,9 @@
     NSMutableString *dayStr2 = [[NSMutableString alloc]initWithCapacity:10];;
     for(int i = 1;i  < weekDayOfFirstDay;i++){
         [dayStr2 appendString:[NSString stringWithFormat:@" %d",lastMonthDay - (weekDayOfFirstDay - i) + 1]];
-        [dayOfPreviousMonth addObject:[NSNumber  numberWithInt:lastMonthDay - (weekDayOfFirstDay - i) + 1]];    
+        [dayOfPreviousMonth addObject:[NSNumber  numberWithInt:lastMonthDay - (weekDayOfFirstDay - i) + 1]];
         colum++;
-    }        
+    }
     //今月の表示
     int dayOfMonth= [self numberOfDayOfMonth:month inYear:year];
     for(NSInteger i = 1;i <=dayOfMonth;i++){
@@ -192,7 +256,7 @@
     for(int i = weekDayOfLastDay+1;i  < 8;i++){
         [dayOfNextMonth addObject:[NSNumber numberWithInt:count]];
         count++;
-    }        
+    }
     
     [array addObject:dayOfPreviousMonth];
     [array addObject:dayOfThisMonth];
@@ -232,7 +296,7 @@
     
     //dbアクセス
     int tag = [[[info allKeys] objectAtIndex:0] intValue];
-    int tapDay =[[info objectForKey:[NSNumber numberWithInt:tag]] intValue]; 
+    int tapDay =[[info objectForKey:[NSNumber numberWithInt:tag]] intValue];
     switch (tag) {
         case 1:
             if(month == 1){
@@ -247,7 +311,7 @@
         case 3:
             if(month == 12){
                 NSLog(@"tap されたのは%d年%d月の%d日です",year+1,1,tapDay);
-            }else{       
+            }else{
                 NSLog(@"tap されたのは%d年%d月の%d日です",year,month+1,tapDay);
             }
             break;
@@ -263,10 +327,10 @@
     if(tapDayInfo.count !=0 &&selectedDayInfo.count !=0){
         
         int newTag = [[[tapDayInfo allKeys] objectAtIndex:0] intValue];
-        int tapDay =[[tapDayInfo objectForKey:[NSNumber numberWithInt:newTag]] intValue]; 
+        int tapDay =[[tapDayInfo objectForKey:[NSNumber numberWithInt:newTag]] intValue];
         
         int oldTag = [[[selectedDayInfo allKeys] objectAtIndex:0] intValue];
-        int selectedDay =[[selectedDayInfo objectForKey:[NSNumber numberWithInt:oldTag]] intValue]; 
+        int selectedDay =[[selectedDayInfo objectForKey:[NSNumber numberWithInt:oldTag]] intValue];
         
         if(tapDay == selectedDay && newTag == oldTag){
             result = NO;
