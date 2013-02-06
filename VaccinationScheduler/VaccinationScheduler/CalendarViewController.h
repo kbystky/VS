@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface CalendarViewController : UIViewController
+@interface CalendarViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>
 - (IBAction)tapNext:(id)sender;
 - (IBAction)tapPrev:(id)sender;
 

@@ -26,4 +26,5 @@ typedef enum{
 -(UIView *)createDayViewWithMonthDays:(NSArray *)monthArray numberOfWeek:(int)numberOfWeek actionTargetWhenViewTapped:(id)target;
 -(void)changeDayLabelBackgroundWIthDayInfo:(NSDictionary *)info isType:(int)type;
 -(CGSize)calendarViewSize;
+- (void)checkAppointmentDayWithAppointment:(NSArray *)appointments thisMonth:(NSInteger)thisMonth;
 @end

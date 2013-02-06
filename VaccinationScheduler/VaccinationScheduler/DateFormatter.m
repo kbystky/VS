@@ -14,8 +14,10 @@
 {
     NSDateFormatter* df = [[NSDateFormatter alloc] init];
     [df setDateFormat:@"yyyy/MM/dd"];
-
-    return [df dateFromString:string];
+    //simulatorで時刻と日付設定が出来ないのでやむを得ずです
+    //NSLog(@"check : %@",[NSDate dateWithTimeInterval:(60*60*9) sinceDate:[df dateFromString:string]]);
+    //return [df dateFromString:string];
+    return [NSDate dateWithTimeInterval:(60*60*9) sinceDate:[df dateFromString:string]];
 }
 
 +(NSString *)dateFormatWithDate:(NSDate *)date

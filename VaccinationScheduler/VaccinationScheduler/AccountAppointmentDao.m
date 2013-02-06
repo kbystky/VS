@@ -46,6 +46,36 @@
     return appointment;
 }
 
+- (NSArray *)allAppointmentsData
+{
+    NSMutableArray *appointments = [[NSMutableArray alloc]init];
+    
+    FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
+    [db open];
+    NSString *sql = [NSString stringWithFormat:@"SELECT id,accountId,vaccinationId,times,appointmentDate,consultationDate,isSynced FROM appointment"];
+    
+    //データ取得
+    FMResultSet *results = [db executeQuery:sql];
+    while([results next]){
+        AccountAppointmentDto *dto = [[AccountAppointmentDto alloc]init];
+        dto.apId = [results intForColumnIndex:0];
+        dto.accountId = [results intForColumnIndex:1];
+        dto.vcId = [results intForColumnIndex:2];
+        dto.times = [results intForColumnIndex:3];
+        dto.appointmentDate = [results stringForColumnIndex:4];
+        if([dto.consultationDate isEqualToString:@"nodata"]){
+            dto.consultationDate = nil;
+        }else{
+            dto.consultationDate = [results stringForColumnIndex:5];
+        }
+        dto.isSynced = [results boolForColumnIndex:6];
+        [appointments addObject:dto];
+    }
+    
+    [db close];
+    return appointments;
+}
+
 -(BOOL)saveAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto{
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];

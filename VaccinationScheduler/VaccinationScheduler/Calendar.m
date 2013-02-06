@@ -16,13 +16,8 @@
 
 @synthesize year;
 @synthesize month;
-//@synthesize thisYear;
-//@synthesize thisMonth;
-//@synthesize thisDay;
-
 #pragma mark ************** initialize **************
 -(id)init{
-    FUNK();
     self = [super init];
     
     if(self != nil){
@@ -40,7 +35,6 @@
 }
 
 -(void)getTodayInfo{
-    FUNK();
     // timezoneを設定しないとグリニッジ標準時になる
     NSDate *today = [NSDate dateWithTimeIntervalSinceNow:[[NSTimeZone systemTimeZone] secondsFromGMT]];
     
@@ -49,17 +43,12 @@
     
     year = [comps year];
     month = [comps month];
-    //    thisYear = [comps year];
-    //    thisMonth = [comps month];
-    //    thisDay = [comps day];
 }
 
 #pragma mark ************** Utility For Create Calender **************
 
 //月の初日の曜日を求める
 -(NSInteger)weekDayOfFirstDayWithMonth:(NSInteger)m inYear:(NSInteger)y{
-    FUNK();
-    
     NSDateComponents *com = [[NSDateComponents alloc]init];
     [com setDay:1];
     [com setYear:y];
@@ -69,26 +58,22 @@
     NSDate *theDay = [cal dateFromComponents:com];
     
     NSDateComponents *weekDayCom = [cal components:NSWeekdayCalendarUnit fromDate:theDay];
-    NSLog(@"%d年%d月の月初めの曜日は：%d",y,m,[weekDayCom weekday]);
+    //NSLog(@"%d年%d月の月初めの曜日は：%d",y,m,[weekDayCom weekday]);
     return [weekDayCom weekday];
 }
 
 //月末の曜日を求める
 -(NSInteger)weekDayOfLastDayWithMonth:(NSInteger)m inYear:(NSInteger)y{
-    FUNK();
-    
     NSDateComponents *weekDayCom =
     [cal components:NSWeekdayCalendarUnit
            fromDate:[self lastDayOfMonthWithMonth:m inYear:y]];
     
-    NSLog(@"%d年%d月の月末の曜日は：%d",y,m,[weekDayCom weekday]);
+    //NSLog(@"%d年%d月の月末の曜日は：%d",y,m,[weekDayCom weekday]);
     return [weekDayCom weekday];
 }
 
 //月末のNSDateを取得する
 -(NSDate *)lastDayOfMonthWithMonth:(NSInteger)m inYear:(NSInteger)y{
-    FUNK();
-    
     NSDateComponents *com = [[NSDateComponents alloc]init];
     [com setDay:[self numberOfDayOfMonth:m inYear:y]];
     [com setYear:y];
@@ -99,8 +84,6 @@
 
 //該当月の日数を求める
 -(NSInteger)numberOfDayOfMonth:(NSInteger)m inYear:(NSInteger)y{
-    FUNK();
-    
     NSDateComponents *com = [[NSDateComponents alloc]init];
     
     [com setDay:1];
@@ -111,14 +94,12 @@
     NSRange range = [cal rangeOfUnit:NSDayCalendarUnit
                               inUnit:NSMonthCalendarUnit
                              forDate:theDay];
-    NSLog(@"%d年%d月の日数は：%d",y,m,range.length);
+    //NSLog(@"%d年%d月の日数は：%d",y,m,range.length);
     return range.length;
 }
 
 //先月の末日の日付を取得する
 -(NSInteger )getLastMonthDay{
-    FUNK();
-    
     NSDateComponents *com = [[NSDateComponents alloc]init];
     [com setDay:0]; //0を指定すると先月末が取得できる
     [com setYear:year];
@@ -133,8 +114,6 @@
 
 //該当月の週数を求める
 -(NSInteger)numberOfWeekWithMonth:(NSInteger)m inYear:(NSInteger)y{
-    FUNK();
-    
     int colum = 1;
     NSInteger numberOfWeek=1;
     
@@ -185,7 +164,7 @@
         firstYear = thisYear;
         firstMonth = thisMonth;
     }
-    
+
     // last
     int endYear = 0;
     int endMonth = 0;
@@ -212,7 +191,7 @@
         endDay = [self numberOfDayOfMonth:endMonth inYear:endYear];
         
     }
-    
+
     NSString *firstDate = [NSString stringWithFormat:@"%d/%d/%d",firstYear,firstMonth,firstDay];
     
     NSString *endDate = [NSString stringWithFormat:@"%d/%d/%d",endYear,endMonth,endDay];

@@ -65,6 +65,8 @@ AccountAppointmentDao *dao = nil;
 }
 - (void)Logger:(AccountAppointmentDto *)dto
 {
+    FUNK();
+    NSLog(@"/********** Logger ************/\n");
     NSLog(@"accountId %d",dto.accountId);
     NSLog(@"vcId %d",dto.vcId);
     NSLog(@"current times %d",dto.times);
@@ -72,14 +74,13 @@ AccountAppointmentDao *dao = nil;
     NSLog(@"consultationDate %@",dto.consultationDate);
     NSLog(@"isSynced %d",dto.isSynced);
     NSLog(@"vcDto %@",dto.vaccinationDto);
-}
+    NSLog(@"/******************************/");}
 
 - (void)saveAppointmentWithAccountId:(NSInteger)accountid times:(NSInteger)times  appointmentDate:(NSString *)appointmentDate  consultationDate:(NSString *)consultationDate vaccinationDto:(VaccinationDto *)vcDto
 {
     
     AccountAppointmentDto *dto = [[AccountAppointmentDto alloc]init];
     dto.accountId = accountid;
-    //vcidを探す？引数でdtoを受け取るのも可
     dto.vcId = vcDto.vcId;
     dto.times = times + 1; //引数の値は現在の終了回数なので +1 する
     dto.appointmentDate = appointmentDate;
@@ -103,34 +104,65 @@ AccountAppointmentDao *dao = nil;
 - (NSArray *)monthDataWithStartYMD:(NSString *)startYmd endYM:(NSString *)endYmd
 {
     FUNK();
-    NSLog(@"\nstring  start : %@ \nend : %@",startYmd,endYmd);
+
+    NSMutableArray *result = [[NSMutableArray alloc]init];
     
     //date に変換
     NSDate *startDate = [DateFormatter dateFormatWithString:startYmd];
     NSDate *endDate = [DateFormatter dateFormatWithString:endYmd];
-    NSLog(@"\nstart : %@ \nend : %@",startDate,endDate);
     
-    //過去未来の比較でいけるかも
-    //http://cheesememo.blog39.fc2.com/blog-entry-329.htmlもあやしい
-    /*
-     NSDateFormatter *inputDateFormatter = [[NSDateFormatter alloc] init];
-     [inputDateFormatter setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
-     NSDate *dateA = [inputDateFormatter dateFromString:@"2000/03/01 00:00:00"];
-     NSDate *dateB = [inputDateFormatter dateFromString:@"2000/03/03 00:00:00"];
-     
-     // 2つの日付のうち、より過去の日を返す
-     NSLog(@"%@, %@ -> %@", dateA, dateB, [dateA earlierDate:dateB]);
-     // 2つの日付のうち、より未来の日を返す
-     NSLog(@"%@, %@ -> %@", dateA, dateB, [dateA laterDate:dateB]);
+    // Daoから全Appointmentを取得
+    AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
+    NSArray *appointments = [dao allAppointmentsData];
 
-     //result
-     //2000-03-01 00:00:00 +0900, 2000-03-03 00:00:00 +0900 -> 2000-03-01 00:00:00 +0900
-     //2000-03-01 00:00:00 +0900, 2000-03-03 00:00:00 +0900 -> 2000-03-03 00:00:00 +0900
-     */
-    return [NSArray array];
+    // 各Appointmentの日付をNSDAteに変換・比較
+    for(AccountAppointmentDto *dto in appointments){
+        // check startDate <= dto.appDate <= endDate
+        NSDate *appDate =[DateFormatter dateFormatWithString:dto.appointmentDate];
+        if([self checkDateIsEarlierWithTargetDate:appDate compareDate:endDate] &&
+           [self checkDateIsLaterWithTargetDate:appDate compareDate:startDate]){
+            [result addObject:dto];
+        }
+    }
+
+    for(AccountAppointmentDto *dto in result){[self Logger:dto];}
+
+    //dbに登録してあるvcIDを抽出
+    NSMutableArray *vaccinationsId = [[NSMutableArray alloc]init];
+    for(AccountAppointmentDto *dto in result){
+        [vaccinationsId  addObject:[NSNumber numberWithInt:dto.vcId]];
+    }
+    
+    //vcIDを使用して、一致するvcDtoを取得しappointmentDtoの完成
+    VaccinationDao *vaccinationDao = [[VaccinationDao alloc]init];
+    NSArray *vaccinations = [vaccinationDao vaccinationsWithvaccinationId:vaccinationsId];
+    
+    int index = 0;
+    for(AccountAppointmentDto *aaDto in result){
+        aaDto.vaccinationDto = [vaccinations objectAtIndex:index];
+        index++;
+    }
+
+    return result;
 }
 
+- (BOOL)checkDateIsEarlierWithTargetDate:(NSDate *)tDate compareDate:(NSDate *)comDate
+{
+    NSComparisonResult result = [tDate compare:comDate];
+    if(result == NSOrderedDescending){
+        return NO;
+    }
+    return YES;
+}
 
+- (BOOL)checkDateIsLaterWithTargetDate:(NSDate *)tDate compareDate:(NSDate *)comDate
+{
+    NSComparisonResult result = [tDate compare:comDate];
+    if(result == NSOrderedAscending){
+        return NO;
+    }
+    return YES;
+}
 
 
 

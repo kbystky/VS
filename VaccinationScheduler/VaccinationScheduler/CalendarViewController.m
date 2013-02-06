@@ -6,11 +6,24 @@
 //  Copyright (c) 2012年 __MyCompanyName__. All rights reserved.
 //
 
-#import "CalendarViewController.h"
 #import "AppDelegate.h"
+#import "CalendarViewController.h"
+
 #import "Calendar.h"
 #import "CalendarView.h"
+
 #import "AccountAppointmentService.h"
+#import "UserDefaultsManager.h"
+
+#import "AccountAppointmentDto.h"
+#import "VaccinationDto.h"
+#import "AccountInfoDto.h"
+#import "VaccinationDto.h"
+
+#import "DetailListViewController.h"
+
+#define CellIdentifier @"myCell"
+
 @interface CalendarViewController ()
 {
     NSInteger selectedDay;
@@ -21,6 +34,8 @@
     NSMutableDictionary *selectedDayInfo;
     UITableView *tableView;
     NSArray *monthArray;
+    NSArray *dataSource;
+    CGRect tableViewRect;
 }
 @property (strong,nonatomic) UISegmentedControl *segmentC;
 @end
@@ -40,63 +55,20 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
     NSArray *topLevelObjects = [[NSBundle mainBundle] loadNibNamed:CALENDARVIEW_NIB_NAME owner: self options: nil];
     calView = [topLevelObjects objectAtIndex:0];
     [self.view addSubview:calView];
-    
-    [self calShow];
-    
 }
 
 -(void)viewWillAppear:(BOOL)animated
 {
-    NSLog(@"view will appear");
     [super viewWillAppear:YES];
     [self navigationControllerSetting];
     [self navigationBarSetting];
     [self toolbarSetting];
-    /*********************************/
-    /** data table view setting **/
-    /*
-     calView.backgroundColor = [UIColor blueColor];
-     NSLog(@"height %f width %f",[calView calendarViewSize].height,[calView calendarViewSize].width);
-     NSLog(@"height %f %f %f",
-     self.view.frame.size.height,
-     self.navigationController.navigationBar.frame.size.height,
-     self.navigationController.toolbar.frame.size.height);
-     CGFloat tmp = self.view.frame.size.height - (calView.calendarViewSize.height - self.navigationController.navigationBar.frame.size.height);
-     NSLog(@"tmp %f",tmp);
-     CGRect rect3 = CGRectMake(0,
-     calView.calendarViewSize.height,
-     SCREEN_WIDTH,
-     self.view.frame.size.height - calView.calendarViewSize.height
-     );
-     
-     CGRect rect2 = CGRectMake(0,
-     calView.calendarViewSize.height,
-     SCREEN_WIDTH,
-     self.view.frame.size.height -
-     (calView.calendarViewSize.height));
-     
-     CGRect rect = CGRectMake(0,
-     calView.calendarViewSize.height + self.navigationController.navigationBar.frame.size.height,
-     SCREEN_WIDTH,
-     self.view.frame.size.height -
-     (self.navigationController.navigationBar.frame.size.height + self.navigationController.toolbar.frame.size.height + calView.calendarViewSize.height));
-     //    tableView = [[UITableView alloc]initWithFrame:rect];
-     
-     UIView *v = [[UIView alloc]initWithFrame:rect3];
-     v.backgroundColor = [UIColor redColor];
-     [self.view addSubview:v];
-     */
-    /*********************************/
-    /*    monthArray = [cal monthDays];
-    NSString *startDate = [[monthArray objectAtIndex:0] objectAtIndex:0];
-    
-    NSArray *nextMonth = [monthArray objectAtIndex:monthArray.count - 1];
-    NSString *endDate =  [nextMonth objectAtIndex:nextMonth.count - 1];
-    
-    AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
-    [service monthDataWithStartYMD:startDate endYM:endDate];
-*/
- }
+}
+-(void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    [self calShow];
+}
 - (void)viewDidUnload
 {
     [super viewDidUnload];
@@ -112,8 +84,6 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
 {
     [self.navigationController setNavigationBarHidden:NO animated:NO];
     [self.navigationController setToolbarHidden:NO animated:NO];
-    //    self.navigationController.toolbar.barStyle = UIBarStyleBlack;
-    //    self.navigationController.toolbar.translucent = YES;
 }
 
 -(void)navigationBarSetting
@@ -156,7 +126,20 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
 {
     self.segmentC.selectedSegmentIndex = 0;
 }
-
+- (void)createTableView
+{
+    [tableView removeFromSuperview];
+    tableViewRect = CGRectMake(0,
+                               calView.calendarViewSize.height,
+                               SCREEN_WIDTH,
+                               self.view.frame.size.height - calView.calendarViewSize.height
+                               );
+    
+    tableView = [[UITableView alloc]initWithFrame:tableViewRect];
+    tableView.dataSource = self;
+    tableView.delegate = self;
+    [self.view addSubview:tableView];
+}
 #pragma mark ************ SegmentedControl Action *************
 //カレンダー表示・リスト表示を切り替える
 -(void)changeShowType:(UISegmentedControl *)sender
@@ -175,17 +158,20 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
     selectedDayInfo = [[NSMutableDictionary alloc]initWithCapacity:1];
     //年月の表示
     self.navigationItem.title =  [NSString stringWithFormat:@"%d年 %d月",cal.year,cal.month];
+
+    // set table datasource
+    NSArray *firstAndEndDate = [cal firstDateAndEndDateWithYear:cal.year month:cal.month];
+    AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
+    dataSource = [service monthDataWithStartYMD:[firstAndEndDate objectAtIndex:0] endYM:[firstAndEndDate objectAtIndex:1]];
+    [tableView reloadData];
     
     //日付のビューを生成
     [calView createDayViewWithMonthDays:[cal monthDays]
                            numberOfWeek:[cal numberOfWeekWithMonth:cal.month inYear:cal.year]
              actionTargetWhenViewTapped:self];
-
-    NSArray *firstAndEndDate = [cal firstDateAndEndDateWithYear:cal.year month:cal.month];
-    NSLog(@"first %@ , end %@",[firstAndEndDate objectAtIndex:0],[firstAndEndDate objectAtIndex:1]);
-    AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
-    [service monthDataWithStartYMD:[firstAndEndDate objectAtIndex:0] endYM:[firstAndEndDate objectAtIndex:1]];
+    [calView checkAppointmentDayWithAppointment:dataSource thisMonth:cal.month];
     
+    [self createTableView];
 }
 
 //日付がタップされたときの処理
@@ -221,5 +207,42 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
     [self calShow];
 }
 /***************************************************/
+#pragma mark ************  Delegate *************
 
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return dataSource.count;
+}
+
+-(UITableViewCell *)tableView:(UITableView *)_tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    UITableViewCell *cell = [_tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+    }
+    AccountAppointmentDto *d = (AccountAppointmentDto *)[dataSource objectAtIndex:indexPath.row];
+    cell.textLabel.text = d.vaccinationDto.name;
+    //    cell.textLabel.text = [NSString stringWithFormat:@"%d",indexPath.row];
+    
+    return cell;
+    
+}
+
+-(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    // create dto
+    AccountAppointmentDto *appointmentDto = (AccountAppointmentDto *)[dataSource objectAtIndex:indexPath.row];
+    VaccinationDto *vaccinationDto = appointmentDto.vaccinationDto;
+    
+    /// get accountInfoDto
+    UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
+    AccountInfoDto *accountDto = [manager accountWithId:appointmentDto.accountId];
+    
+    //選択されたのアカウントDtoをからアポイントメントDto datasourceを生成
+    AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
+    accountDto.appointmentDto = [service appointmentsDtoWithAccountId:accountDto.accountId];
+    
+    DetailListViewController *viewController = [[DetailListViewController alloc]initWithAccountInfoDto:accountDto vaccinationDto:vaccinationDto appointmentDto:appointmentDto editType:TYPE_EDIT];
+    [self.navigationController pushViewController:viewController animated:YES];
+}
 @end

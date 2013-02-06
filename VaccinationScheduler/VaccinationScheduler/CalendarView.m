@@ -8,8 +8,10 @@
 
 #import "CalendarView.h"
 #import <QuartzCore/QuartzCore.h>
+#import "AccountAppointmentDto.h"
 
-#define DAYOFWEEK_VIEW_HEIGHT 28
+#define DAYOFWEEK_VIEW_HEIGHT 20
+
 @interface CalendarView()
 {
     NSMutableArray *dayArray;
@@ -81,7 +83,7 @@
     CGFloat y = dayOfWeekBaseView.frame.size.height;
     CGFloat cellSize = SCREEN_WIDTH/7.0;
     //週のviewを追加する分、calVIewのサイズを大きくする
-    dayViewHeight = numberOfWeek * cellSize +DAYOFWEEK_VIEW_HEIGHT;
+    dayViewHeight = numberOfWeek * cellSize + DAYOFWEEK_VIEW_HEIGHT;
     self.frame= CGRectMake(0, 0, self.frame.size.width, dayViewHeight);
     int colum = 0;
     
@@ -123,6 +125,39 @@
     return self;
 }
 
+- (void)checkAppointmentDayWithAppointment:(NSArray *)appointments thisMonth:(NSInteger)thisMonth
+{
+
+    for(AccountAppointmentDto *dto in appointments){
+        NSLog(@"appo date : %@",dto.appointmentDate);
+        NSString *appointmentDate = dto.appointmentDate;
+        NSArray *splitResult = [appointmentDate componentsSeparatedByString:@"/"];
+        // [0]年、[1]月、[2]日
+        NSLog(@"split int [0]:%d [1]:%d [2]:%d ",[[splitResult objectAtIndex:0] intValue],[[splitResult objectAtIndex:1] intValue],[[splitResult objectAtIndex:2] intValue]);
+        NSLog(@"split string [0]:%@ [1]:%@ [2]:%@",[splitResult objectAtIndex:0],[splitResult objectAtIndex:1],[splitResult objectAtIndex:2]);
+
+        if([[splitResult objectAtIndex:1] intValue] == thisMonth){
+            NSLog(@"今月!");
+            for(UILabel *l in dayArray){
+                if(l.tag == 2 && [l.text isEqualToString:[NSString stringWithFormat:@"%d",[[splitResult objectAtIndex:2]intValue]]]){
+                    NSLog(@"今月だし、一致");
+                    l.backgroundColor = [UIColor brownColor];
+                    break;
+                }
+            }
+        }else{
+            NSLog(@"今月!じゃない");
+            for(UILabel *l in dayArray){
+                if(l.tag != 2 && [l.text isEqualToString:[NSString stringWithFormat:@"%d",[[splitResult objectAtIndex:2]intValue]]]){
+                    NSLog(@"今月じゃないけど、一致");
+                    l.backgroundColor = [UIColor purpleColor];
+                    break;
+                }
+            }
+        }
+        NSLog(@"\n\n");
+    }
+}
 -(void)changeDayLabelBackgroundWIthDayInfo:(NSDictionary *)info isType:(int)type{
     
     if(info.count !=0){
@@ -164,7 +199,8 @@
 
 -(CGSize)calendarViewSize
 {
-    return CGSizeMake(SCREEN_WIDTH, dayViewHeight + DAYOFWEEK_VIEW_HEIGHT);
+//    return CGSizeMake(SCREEN_WIDTH, dayViewHeight + DAYOFWEEK_VIEW_HEIGHT);
+    return CGSizeMake(SCREEN_WIDTH, dayViewHeight);
 }
 
 
