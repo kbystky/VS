@@ -101,6 +101,26 @@
     return result;
 }
 
+-(BOOL)updateAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto{
+    FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
+    [db open];
+    FUNK();[self Logger:dto];
+    
+    if([dto.consultationDate isEqual:nil]){
+        dto.consultationDate = @"nodata";
+    }
+    NSString *sql = @"UPDATE appointment SET appointmentDate = ? , consultationDate = ? WHERE id = ?";
+    BOOL result = [db executeUpdate:sql,
+                   [dto appointmentDate],
+                   [dto consultationDate],
+                   [NSNumber numberWithInt:dto.apId]];
+    
+    NSLog(@"result %d",result);
+    [db close];
+    return result;
+}
+
+
 //指定された予約の削除
 -(BOOL)removeAppointmentWithAppointmentId:(NSInteger)appointmentId
 {
@@ -129,6 +149,7 @@
 /*********** other **********/
 - (void)Logger:(AccountAppointmentDto *)dto
 {
+    NSLog(@"apId %d",dto.apId);
     NSLog(@"accountId %d",dto.accountId);
     NSLog(@"vcId %d",dto.vcId);
     NSLog(@"current times %d",dto.times);

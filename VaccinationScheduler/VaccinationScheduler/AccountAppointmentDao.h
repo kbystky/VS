@@ -20,6 +20,7 @@
 - (NSArray *)appointmentsDataWithAccountId:(NSInteger)accountid;
 - (NSArray *)allAppointmentsData;
 - (BOOL)saveAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto;
+-(BOOL)updateAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto;
 - (BOOL)removeAppointmentWithAppointmentId:(NSInteger)appointmentId;
 -(BOOL)removeAppointmentsWithAccoutId:(NSInteger)accountId;
 @end

@@ -17,7 +17,7 @@
                                       delegate:nil
                              cancelButtonTitle:[self alertCancelButtonTitleWithAlertType:alertType]
                              otherButtonTitles:[self alertOtherButtonTitleWithAlertType:alertType],nil];
-    alert.tag = alertType; 
+    alert.tag = alertType;
     return alert;
 }
 
@@ -33,11 +33,14 @@
         case ALERTTYPE_DEMAND_FILLACCOUNTINFO | ALERTTYPE_DEMAND_FILLINFO:
             title = @"未入力の項目があります";
             break;
-        case ALERTTYPE_CHECK_DELETE:
+        case ALERTTYPE_DELETE_ACCOUNT:
             title = @"アカウントを削除しても\nよろしいですか？";
             break;
+        case ALERTTYPE_DELETE_APPOINTMENT:
+            title = @"予約を削除しても\nよろしいですか？";
+            break;
     }
-    return title; 
+    return title;
 }
 
 +(NSString *)alertMessageWithAlertType:(NSInteger)type{
@@ -53,50 +56,29 @@
         case ALERTTYPE_DEMAND_FILLACCOUNTINFO:
             message = @"アカウントの情報を入力してください。";
             break;
-        case ALERTTYPE_CHECK_DELETE:
+        case ALERTTYPE_DELETE_ACCOUNT:
             message = @"アカウントを削除すると予約情報\nなどがすべて削除されます。";
             break;
         case ALERTTYPE_DEMAND_FILLINFO:
             message = @"予約日を入力してください。";
             break;
-
+        case ALERTTYPE_DELETE_APPOINTMENT:
+            message = @"削除された予約情報は復元できません。";
+            break;
+            
     }
-    return message; 
+    return message;
 }
 
 +(NSString *)alertCancelButtonTitleWithAlertType:(NSInteger)type{
-    NSString *title=nil;
-    switch (type) {
-        case ALERTTYPE_CHECK_DELETE:
-            title = @"キャンセル";
-            break;
+    if(type == ALERTTYPE_DELETE_ACCOUNT || type == ALERTTYPE_DELETE_APPOINTMENT){
+        return @"キャンセル";
     }
-    return title; 
+    return nil;
 }
 
 +(NSString *)alertOtherButtonTitleWithAlertType:(NSInteger)type{
     FUNK();
-return @"OK";
-    //    NSString *title=nil;
-//
-//    switch (type) {
-//        case ALERTTYPE_CREATEACCOUNTFORCIBLY:
-//            title = @"OK";
-//            break;
-//        case ALERTTYPE_DEMAND_DELETEACCOUNT:
-//            title = @"OK";
-//            break;
-//        case ALERTTYPE_DEMAND_FILLACCOUNTINFO:
-//            title = @"OK";
-//            break;
-//        case ALERTTYPE_CHECK_DELETE:
-//            title = @"OK";
-//            break;
-//        case ALERTTYPE_DEMAND_FILLINFO:
-//            title = @"OK";
-//            break;
-//    }
-//
-//    return title;
+    return @"OK";
 }
 @end

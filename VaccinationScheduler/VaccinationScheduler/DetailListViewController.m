@@ -29,6 +29,8 @@
 @property (strong, nonatomic) IBOutlet UILabel *totalTimesLabel;
 @property (strong, nonatomic) IBOutlet UILabel *finishTimesLable;
 @property (strong, nonatomic) IBOutlet UITextField *appointmentDayTextField;
+@property (strong, nonatomic) IBOutlet UIButton *deleteButton;
+@property (strong, nonatomic) IBOutlet UIButton *addButton;
 
 @property(strong, nonatomic) UIActionSheet *pickerViewPopup;
 @property(strong, nonatomic) UIDatePicker *datePicker;
@@ -74,16 +76,16 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    [self viewSetting];
     self.appointmentDayTextField.delegate =self;
 }
 
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:YES];
-    [self viewSetting];
+    [self.navigationController setToolbarHidden:YES animated:YES];
 }
 -(void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:YES];
-    [self.navigationController setToolbarHidden:YES animated:YES];
 }
 
 - (void)viewDidUnload
@@ -92,6 +94,8 @@
     [self setFinishTimesLable:nil];
     [self setVaccinationNameLabel:nil];
     [self setAppointmentDayTextField:nil];
+    [self setDeleteButton:nil];
+    [self setAddButton:nil];
     [super viewDidUnload];
 }
 
@@ -108,44 +112,64 @@
     if(type == TYPE_EDIT){
         //予約編集
         NSLog(@"EDIT TYPE");
-
         //TODO:これまでの受診回数を表示でいいかな？
         NSInteger appointmentTimes = [self countOfConsultationTimes];
         NSLog(@"appointmenttimes %d",appointmentTimes);
         self.finishTimesLable.text = [NSString stringWithFormat:@"%d",appointmentTimes];
         //やっぱ何回目の受診かを表示の方が良いね
-
+        
         self.appointmentDayTextField.text =appointmentDto.appointmentDate;
-
+        
     }else if (type == TYPE_CREATE){
         //新規予約作成
         //これまでの受診回数を表示
         NSInteger appointmentTimes = [self countOfConsultationTimes];
-        NSLog(@"appointmenttimes %d",appointmentTimes);
         self.finishTimesLable.text = [NSString stringWithFormat:@"%d",appointmentTimes];
+
+        // 削除ボタンの削除、登録ボタンの移動
+        [self.deleteButton removeFromSuperview];
+        CGRect addBtnFrame = self.addButton.frame;
+        self.addButton.frame = CGRectMake(123, addBtnFrame.origin.y, addBtnFrame.size.width,addBtnFrame.size.height );
     }
 }
 
 - (IBAction)addAppointment:(id)sender {
-    
     // 予約日が入力済みなら登録する
     if(self.appointmentDayTextField.text.length != 0){
-        //登録
+        
+        // 更新
         AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
-        [service saveAppointmentWithAccountId:accountInfoDto.accountId
-                                        times:[self.finishTimesLable.text intValue]
-                              appointmentDate:self.appointmentDayTextField.text
-                             consultationDate:nil
-                               vaccinationDto:vaccinationDto];
+        if(type == TYPE_EDIT){
+            [service updateAppointmentWithCurrentAppointmentDto:appointmentDto
+                                             newAppointmentDate:self.appointmentDayTextField.text
+                                            newConsultationDate:nil];
+            // notification に再登録
         
-        //notificationに登録
-//        LocalNotificationManager *manager = [[LocalNotificationManager alloc]init];
-//        [manager createNotificationWithRecordDate:self.appointmentDayTextField.text accountId:accountId];
-        
+        }else if (type == TYPE_CREATE){
+            //登録
+            [service saveAppointmentWithAccountId:accountInfoDto.accountId
+                                            times:[self.finishTimesLable.text intValue]
+                                  appointmentDate:self.appointmentDayTextField.text
+                                 consultationDate:nil
+                                   vaccinationDto:vaccinationDto];
+            
+            //notificationに登録
+            //        LocalNotificationManager *manager = [[LocalNotificationManager alloc]init];
+            //        [manager createNotificationWithRecordDate:self.appointmentDayTextField.text accountId:accountId];
+            
+        }
+
         [self.navigationController popViewControllerAnimated:YES];
+        return;
     }else{
         [[AlertBuilder createAlertWithType:ALERTTYPE_DEMAND_FILLINFO] show];
     }
+}
+
+- (IBAction)deleteButtonTap:(id)sender {
+   UIAlertView *alert = [AlertBuilder createAlertWithType:ALERTTYPE_DELETE_APPOINTMENT];
+    alert.delegate = self;
+    [alert show];
 }
 
 
@@ -200,7 +224,15 @@
         return YES;
     }
 }
+-(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+    if(alertView.tag == ALERTTYPE_DELETE_APPOINTMENT && buttonIndex == BUTTON_INDEX_OK){
+        AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
+        [service removeAppointmentWithAppointmentDto:appointmentDto];
 
+        [self.navigationController popViewControllerAnimated:YES];
+    }
+}
 #pragma mark *****************  other ******************
 - (NSInteger)countOfConsultationTimes
 {

@@ -125,7 +125,7 @@
     FUNK();
     if(self.editType == EDITTYPE_EDIT){
         
-        UIAlertView *alert = [AlertBuilder createAlertWithType:ALERTTYPE_CHECK_DELETE];
+        UIAlertView *alert = [AlertBuilder createAlertWithType:ALERTTYPE_DELETE_ACCOUNT];
         alert.delegate = self;
         [alert show];
         
@@ -196,7 +196,7 @@
 }
 
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex{
-    if(alertView.tag == ALERTTYPE_CHECK_DELETE && buttonIndex == BUTTON_INDEX_OK){
+    if(alertView.tag == ALERTTYPE_DELETE_ACCOUNT && buttonIndex == BUTTON_INDEX_OK){
         //アカウント削除
         [manager removeAccount:self.accountInfoDto];
 

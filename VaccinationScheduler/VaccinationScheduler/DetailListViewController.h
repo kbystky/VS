@@ -15,7 +15,7 @@ typedef enum{
 }CalledType;
 
 @class AccountInfoDto;
-@interface DetailListViewController : UIViewController<UITextFieldDelegate,UIActionSheetDelegate>
+@interface DetailListViewController : UIViewController<UITextFieldDelegate,UIActionSheetDelegate,UIAlertViewDelegate>
 -(id)initWithAccountInfoDto:(AccountInfoDto *)_accountInfoDto vaccinationDto:(VaccinationDto *)_vaccinationDto editType:(NSInteger)_type;
 -(id)initWithAccountInfoDto:(AccountInfoDto *)_accountInfoDto vaccinationDto:(VaccinationDto *)_vaccinationDto appointmentDto:(AccountAppointmentDto *)_appointmentDto editType:(int)_type;
 @end

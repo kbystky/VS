@@ -4,7 +4,7 @@
 //
 //  Created by 小林 拓也 on 13/01/27.
 //
-//
+//年齢
 
 #import "AccountAppointmentService.h"
 #import "AccountAppointmentDao.h"
@@ -66,7 +66,7 @@ AccountAppointmentDao *dao = nil;
 - (void)Logger:(AccountAppointmentDto *)dto
 {
     FUNK();
-    NSLog(@"/********** Logger ************/\n");
+    NSLog(@"\n/********** Logger ************/\n");
     NSLog(@"accountId %d",dto.accountId);
     NSLog(@"vcId %d",dto.vcId);
     NSLog(@"current times %d",dto.times);
@@ -74,7 +74,8 @@ AccountAppointmentDao *dao = nil;
     NSLog(@"consultationDate %@",dto.consultationDate);
     NSLog(@"isSynced %d",dto.isSynced);
     NSLog(@"vcDto %@",dto.vaccinationDto);
-    NSLog(@"/******************************/");}
+    NSLog(@"/******************************/");
+}
 
 - (void)saveAppointmentWithAccountId:(NSInteger)accountid times:(NSInteger)times  appointmentDate:(NSString *)appointmentDate  consultationDate:(NSString *)consultationDate vaccinationDto:(VaccinationDto *)vcDto
 {
@@ -88,6 +89,14 @@ AccountAppointmentDao *dao = nil;
     dto.isSynced = NO;
     dto.vaccinationDto = vcDto;
     [dao saveAppointmentWithAccountAppointmentDto:dto];
+}
+
+- (void)updateAppointmentWithCurrentAppointmentDto:(AccountAppointmentDto *)dto newAppointmentDate:(NSString *)appointmentDate  newConsultationDate:(NSString *)consultationDate
+//AccountId:(NSInteger)accountid times:(NSInteger)times  appointmentDate:(NSString *)appointmentDate  consultationDate:(NSString *)consultationDate vaccinationDto:(VaccinationDto *)vcDto
+{
+    dto.appointmentDate = appointmentDate;
+    dto.consultationDate = consultationDate;
+    [dao updateAppointmentWithAccountAppointmentDto:dto];
 }
 
 - (void)removeAppointmentWithAppointmentDto:(AccountAppointmentDto *)dto
