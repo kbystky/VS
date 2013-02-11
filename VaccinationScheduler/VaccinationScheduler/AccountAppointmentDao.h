@@ -10,14 +10,6 @@
 @class AccountAppointmentDto;
 @interface AccountAppointmentDao : NSObject
 - (NSArray *)appointmentsDataWithAccountId:(NSInteger)accountid;
--(NSInteger)timesWithAccountId:(NSInteger)accountid vaccinationName:(NSString *)name;
-//-(BOOL)saveAppointmentWithDate:(NSString *)date vaccinationName:(NSString *)name times:(NSInteger)times accountId:(NSInteger)accountid;
--(NSString *)dateWithAccountId:(NSInteger)accountid vaccinationName:(NSString *)name times:(NSInteger)times;
--(BOOL)allDelete;
--(BOOL)deleteWithAccountId:(NSInteger)accountid;
-
-
-- (NSArray *)appointmentsDataWithAccountId:(NSInteger)accountid;
 - (NSArray *)allAppointmentsData;
 - (BOOL)saveAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto;
 -(BOOL)updateAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto;

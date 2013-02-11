@@ -15,9 +15,10 @@
 @interface CalendarView()
 {
     NSMutableArray *dayArray;
+    NSMutableArray *checkExistAppointmentDay;
     UILabel*oneDayView;
     UIView *dayOfWeekBaseView;
-
+    
     CGFloat dayViewHeight;
 }
 @property (weak, nonatomic) IBOutlet UIButton *previousMonthButton;
@@ -54,10 +55,10 @@
     NSArray *dayOfWeekString = [[NSArray alloc]initWithObjects:@"日",@"月",@"火",@"水",@"木",@"金",@"土", nil];
     for(int i = 0;i < 7;i++){
         UILabel *weekOfDayView = [[UILabel alloc]initWithFrame:CGRectMake(x, y, cellWidth, cellHeight)];
-
+        
         weekOfDayView.text = [dayOfWeekString objectAtIndex:i];
         weekOfDayView.textAlignment = UITextAlignmentCenter;
-
+        
         //背景設定
         UIGraphicsBeginImageContext(weekOfDayView.frame.size);
         if(i == 0){
@@ -72,7 +73,7 @@
         UIImage *backgroundImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         weekOfDayView.backgroundColor = [UIColor colorWithPatternImage:backgroundImage];
-
+        
         [dayOfWeekBaseView addSubview:weekOfDayView];
         x+=cellWidth;
     }
@@ -108,7 +109,7 @@
                 x = 0;
             }
             oneDayView = [[UILabel alloc]initWithFrame:CGRectMake(x, y, cellSize, cellSize)];
-
+            
             //背景設定
             UIGraphicsBeginImageContext(oneDayView.frame.size);
             if(arrayIndex == 0){
@@ -134,10 +135,6 @@
             UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:target action:@selector(tapDayCell:)];
             [oneDayView addGestureRecognizer:tapGesture];
             oneDayView.tag = arrayIndex+1;
-
-            //quartzcoreでborderつけてます
-//            [[oneDayView layer] setBorderColor:[[UIColor blackColor] CGColor]];
-//            [[oneDayView layer] setBorderWidth:1.0];
             
             [self addSubview:oneDayView];
             [dayArray addObject:oneDayView];
@@ -150,79 +147,113 @@
 
 - (void)checkAppointmentDayWithAppointment:(NSArray *)appointments thisMonth:(NSInteger)thisMonth
 {
-
+    //init
+    checkExistAppointmentDay = [[NSMutableArray alloc]initWithCapacity:dayArray.count];
+    
     for(AccountAppointmentDto *dto in appointments){
-        NSLog(@"appo date : %@",dto.appointmentDate);
         NSString *appointmentDate = dto.appointmentDate;
         NSArray *splitResult = [appointmentDate componentsSeparatedByString:@"/"];
         // [0]年、[1]月、[2]日
         NSLog(@"split int [0]:%d [1]:%d [2]:%d ",[[splitResult objectAtIndex:0] intValue],[[splitResult objectAtIndex:1] intValue],[[splitResult objectAtIndex:2] intValue]);
         NSLog(@"split string [0]:%@ [1]:%@ [2]:%@",[splitResult objectAtIndex:0],[splitResult objectAtIndex:1],[splitResult objectAtIndex:2]);
-
+        
+        int count = 0;
         if([[splitResult objectAtIndex:1] intValue] == thisMonth){
             NSLog(@"今月!");
             for(UILabel *l in dayArray){
                 if(l.tag == 2 && [l.text isEqualToString:[NSString stringWithFormat:@"%d",[[splitResult objectAtIndex:2]intValue]]]){
+                    UIGraphicsBeginImageContext(l.frame.size);
+                    [[UIImage imageNamed:@"targetday.png"] drawInRect:l.bounds];
+                    UIImage *backgroundImage = UIGraphicsGetImageFromCurrentImageContext();
+                    UIGraphicsEndImageContext();
+                    l.backgroundColor = [UIColor colorWithPatternImage:backgroundImage];
+                    NSLog(@"count %d day %d",count,[l.text intValue]);
                     NSLog(@"今月だし、一致");
-                    l.backgroundColor = [UIColor brownColor];
+                    [checkExistAppointmentDay addObject:[NSNumber numberWithInt:[l.text intValue]]];
                     break;
                 }
+                count++;
             }
         }else{
             NSLog(@"今月!じゃない");
             for(UILabel *l in dayArray){
                 if(l.tag != 2 && [l.text isEqualToString:[NSString stringWithFormat:@"%d",[[splitResult objectAtIndex:2]intValue]]]){
+                    UIGraphicsBeginImageContext(l.frame.size);
+                    [[UIImage imageNamed:@"targetday.png"] drawInRect:l.bounds];
+                    UIImage *backgroundImage = UIGraphicsGetImageFromCurrentImageContext();
+                    UIGraphicsEndImageContext();
+                    l.backgroundColor = [UIColor colorWithPatternImage:backgroundImage];
+                    
                     NSLog(@"今月じゃないけど、一致");
-                    l.backgroundColor = [UIColor purpleColor];
+                    [checkExistAppointmentDay addObject:[NSNumber numberWithInt:[l.text intValue]]];
                     break;
                 }
+                count++;
             }
         }
         NSLog(@"\n\n");
     }
 }
 -(void)changeDayLabelBackgroundWIthDayInfo:(NSDictionary *)info isType:(int)type{
+    FUNK();
+    if(info.count ==0){
+        return;
+    }
+    int tag = [[[info allKeys] objectAtIndex:0] intValue];
+    int day =[[info objectForKey:[NSNumber numberWithInt:tag]] intValue];
+    //背景色の指定
+    UIGraphicsBeginImageContext(oneDayView.frame.size);
     
-    if(info.count !=0){
-        int tag = [[[info allKeys] objectAtIndex:0] intValue];
-        int day =[[info objectForKey:[NSNumber numberWithInt:tag]] intValue]; 
-        UIColor *bgColor=Nil;
-        
-        //背景色の指定
-        if(type == RETURN){
-            switch (tag) {
-                case PRE:
-                    bgColor = [UIColor lightGrayColor];
-                    break;
-                case THIS:
-                    bgColor = [UIColor yellowColor];
-                    break;
-                case NEXT:
-                    bgColor = [UIColor lightGrayColor];
-                    break;
-                default:
-                    break;
-            }
-        }else if(type == SELECT){
-            bgColor = [UIColor redColor];
-        }
-        
-        //色変更
+    //色を戻すのか選択されたのか
+    if(type == RETURN){
+        //予定がある日かチェック
+        int count = 1;
         for(UILabel *l in dayArray){
-            if([l.text intValue] ==day){
-                if(l.tag ==tag){
-                    l.backgroundColor = bgColor;
-                    break;
-                }
+            if([l.text intValue] ==day && l.tag ==tag){
+                break;
             }
+            count++;
         }
         
+        BOOL isTarget = NO;
+        for(NSNumber *num in checkExistAppointmentDay){
+            if([num intValue] == day){
+                [[UIImage imageNamed:@"targetday.png"] drawInRect:oneDayView.bounds];
+                isTarget =  YES;
+                break;
+            }
+        }
+        //今月かどうか
+        if(!isTarget){
+            if(tag == THIS){
+                //土日・平日の判断
+                if(count % 7 == 0){
+                    [[UIImage imageNamed:@"saturday.png"] drawInRect:oneDayView.bounds];
+                }else if(count % 7 == 1){
+                    [[UIImage imageNamed:@"sanday.png"] drawInRect:oneDayView.bounds];
+                }else{
+                    [[UIImage imageNamed:@"day.png"] drawInRect:oneDayView.bounds];
+                }
+            }else{
+                [[UIImage imageNamed:@"otherday.png"] drawInRect:oneDayView.bounds];
+            }
+        }
+    }else if(type == SELECT){
+        [[UIImage imageNamed:@"selectday.png"] drawInRect:oneDayView.bounds];
+    }
+    //色変更
+    for(UILabel *l in dayArray){
+        if([l.text intValue] ==day && l.tag ==tag){
+            UIImage *backgroundImage = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
+            l.backgroundColor = [UIColor colorWithPatternImage:backgroundImage];
+            break;
+        }
     }
 }
 
 -(CGSize)calendarViewSize
 {
-//    return CGSizeMake(SCREEN_WIDTH, dayViewHeight + DAYOFWEEK_VIEW_HEIGHT);
     return CGSizeMake(SCREEN_WIDTH, dayViewHeight);
 }
 

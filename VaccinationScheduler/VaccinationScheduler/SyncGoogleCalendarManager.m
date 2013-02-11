@@ -13,153 +13,76 @@
 #import "UserDefaultsManager.h"
 #import "SVProgressHUD.h"
 #import "StringConst.h"
+#import "AccountInfoDto.h"
+#import "AccountAppointmentDto.h"
+#import "AccountAppointmentService.h"
 
 @interface SyncGoogleCalendarManager()
 {
     NSURL *tmpURL;
     NSInteger accountId;
     NSString *vName;
+    NSInteger finishedFetchAppointmentIndex;
+    NSMutableArray *appointments;
 }
 
 @end
 @implementation SyncGoogleCalendarManager
-- (GDataServiceGoogleCalendar *)calendarService {
-    
-    //一回しか作られない
-    static GDataServiceGoogleCalendar* service = nil;
-    
-    if (!service) {
-        NSLog(@"/************** create new!! *****************/");
-        
-        service = [[GDataServiceGoogleCalendar alloc] init];
-        
-        //        [service setUserAgent:@"SampleCalendarApp"];
-        //        [service setShouldCacheDatedData:YES];
-        [service setServiceShouldFollowNextLinks:YES];
-        [service setShouldServiceFeedsIgnoreUnknowns:YES];
-        // ログイン情報
-        [service setUserCredentialsWithUsername:@"kotaku0216@gmail.com"
-                                       password:@"5112131tk"];
-    }
-    
-    return service;
-}
 
-- (void)syncGCalImp{
-    
-    /***/
-    // make a new event
-    GDataEntryCalendarEvent *newEvent = [GDataEntryCalendarEvent calendarEvent];
-    
-    // set a title, description, and author
-    UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
-    NSDictionary *account  = [manager accountWithId:accountId];
-    NSString *accountName =  [account objectForKey:KEY_NAME];
-    [newEvent setTitle:
-     [GDataTextConstruct textConstructWithString:
-      [NSString stringWithFormat:@"<予防接種：%@>　%@",vName,accountName]]];
-    //    
-    //    [newEvent setSummary:[GDataTextConstruct textConstructWithString:@"Description of sample added event"]];
-    //    GDataPerson *authorPerson = [GDataPerson personWithName:@"Fred Flintstone"
-    //                                                      email:@"test@test.com"];
-    //    [newEvent addAuthor:authorPerson];
-    // start time now, end time in an hour, reminder 10 minutes before
-    NSDate *anHourFromNow = [NSDate dateWithTimeIntervalSinceNow:60*60];
-    //開始、終了時間を指定しないと終日になる
-    GDataDateTime *startDateTime = [GDataDateTime dateTimeWithDate:[NSDate date]
-                                                          timeZone:[NSTimeZone systemTimeZone]];
-    GDataDateTime *endDateTime = [GDataDateTime dateTimeWithDate:anHourFromNow
-                                                        timeZone:[NSTimeZone systemTimeZone]];
-    //    GDataReminder *reminder = [GDataReminder reminder];
-    //    [reminder setMinutes:@"10"];
-    GDataWhen *when = [GDataWhen whenWithStartTime:startDateTime
-                                           endTime:endDateTime];
-    
-    //    [when addReminders:reminder];
-    [newEvent addTime:when];
-    /***/
-    
-    /***/
-    // insert the event into the selected calendar
-    GDataEntryCalendarEvent *event = newEvent;
-    if (event) {
-        GDataServiceGoogleCalendar *service = [self calendarService];
-        [service fetchEntryByInsertingEntry:event 
-                                 forFeedURL:tmpURL
-                                   delegate:self 
-                          didFinishSelector:@selector(ticket:finishedWithObject:error:)];
-    }
-}
+static SyncGoogleCalendarManager *manager = nil;
+static GDataServiceGoogleCalendar *service = nil;
 
-//イベント追加処理後のコールバック
-- (void)ticket:(GDataServiceTicket *)ticket finishedWithObject:(GDataObject *)object error:(NSError *)error {
-    NSLog(@"test in!!!");
-    
-    //ネットワークつながっていない場合とか、アカウントが違う場合とかで処理かえたい
-    if (error) {
-        //        NSLog(@"fetch error: %@", error);
-        //        NSLog(@"error is %@" ,[[error userInfo] objectForKey:@"Error"]);
-        for(NSString *key in[[error userInfo]allKeys]){
-            NSLog(@"key is %@" ,key);
-            NSLog(@"error is %@" ,[[error userInfo] objectForKey:key]);
-            
++ (id)sharedManager
+{
+    @synchronized(self){
+        if(manager == nil){
+            manager = [[SyncGoogleCalendarManager alloc]init];
+            NSLog(@"/************** create new!! *****************/");
+            service = [[GDataServiceGoogleCalendar alloc] init];
+            [service setServiceShouldFollowNextLinks:YES];
+            [service setShouldServiceFeedsIgnoreUnknowns:YES];
+            // ログイン情報
+            [service setUserCredentialsWithUsername:@"kotaku0216@gmail.com"
+                                           password:@"5112131tk"];
         }
-        // 4.読み込みに失敗した旨を表示し、SVProgressHUDを非表示にする
-        [SVProgressHUD showErrorWithStatus:@"同期失敗．．．"];
-        return;
-    }else{
-        NSLog(@"success");
-        // 3.SVProgressHUDを非表示にする
-        [SVProgressHUD dismiss];
-        // 3'.読み込みに成功した旨を表示し、SVProgressHUDを非表示にする
-        [SVProgressHUD showSuccessWithStatus:@"同期完了！"];
+        return manager;
     }
-} 
+    return nil;
+}
 
 /** 登録するカレンダーのURLを取得する**/
 -(void)syncGCalWithAccountId:(NSInteger)_accoutId vaccinationName:(NSString *)_vName{
-    
-    // 2.SVProgressHUDを表示する
-    //[SVProgressHUD show];
-    // 2'.表示するメッセージに「ロード中です」を指定して、アラートビューを表示したときのようなオーバーレイを表示
-    [SVProgressHUD showWithStatus:@"同期中です" maskType:SVProgressHUDMaskTypeGradient];    
-    
+    FUNK();
+    [SVProgressHUD showWithStatus:@"同期中です" maskType:SVProgressHUDMaskTypeGradient];
     
     accountId = _accoutId;
     vName = _vName;
-    
-    GDataServiceGoogleCalendar *gDataSrviceCalendar = [self calendarService];
     // 全てのカレンダーを取得するURL
     NSURL *feedURL = [NSURL URLWithString:kGDataGoogleCalendarDefaultAllCalendarsFeed];
-    
     GDataServiceTicket *ticket;
-    ticket = [gDataSrviceCalendar fetchFeedWithURL:feedURL
-                                          delegate:self
-                                 didFinishSelector:@selector(ticket:finishedWithFeed:error:)];
+    ticket = [service fetchFeedWithURL:feedURL
+                              delegate:self
+                     didFinishSelector:@selector(ticket:finishedWithFeed:error:)];
 }
+
 -(void)ticket:(GDataServiceTicket *) ticket finishedWithFeed:(GDataFeedCalendar *)feed error:(NSError *)error {
-    
+    FUNK();
     //ネットワークつながっていない場合とか、アカウントが違う場合とかで処理かえたい
     if (error || [[feed entries] count] == 0) {
-        //        NSLog(@"fetch error: %@", error);
-        //        NSLog(@"error is %@" ,[[error userInfo] objectForKey:@"Error"]);
         for(NSString *key in[[error userInfo]allKeys]){
             NSLog(@"key is %@" ,key);
             NSLog(@"error is %@" ,[[error userInfo] objectForKey:key]);
-            
         }
+        [SVProgressHUD showErrorWithStatus:@"同期失敗．．．"];
         return;
     }else{
-        NSLog(@"success");
+        NSLog(@"success feed");
     }
-    
     
     // カレンダーデータがある場合
     for (GDataEntryCalendar *calendar in [feed entries]){
-        
         //title
         GDataTextConstruct *titleTextConstruct = [calendar title];
-        
         NSString *calendarTitle = [titleTextConstruct stringValue];
         NSLog(@"title %@",calendarTitle);
         
@@ -170,18 +93,90 @@
         NSString *subCalUrlSuffix = @"group.calendar.google.com/private/full";
         if([tmp hasSuffix:mainCalUrlSuffix] || [tmp hasSuffix:subCalUrlSuffix]){
             NSLog(@"true   LINK %@",[link URL]);
-            tmpURL = [link URL];        
-            [self syncGCalImp];
+            tmpURL = [link URL];
+            [self startFetch];
             break;
-        }else{  
+        }else{
             NSLog(@"false");
             continue;
-        }     
-        tmpURL = [link URL];        
+        }
+        tmpURL = [link URL];
         if (link == nil) {
             continue;
         }
     }
 }
+
+- (void)startFetch{
+    FUNK();
+    [self createAppointmentsData];
+    [self createAndFetchEvent];
+}
+
+- (void)createAppointmentsData
+{
+    AccountAppointmentService *appService = [[AccountAppointmentService alloc]init];
+    appointments = [NSMutableArray arrayWithArray:[appService allAppointmentsData]];
+}
+
+- (void)createAndFetchEvent
+{
+    // make a new event
+    GDataEntryCalendarEvent *newEvent = [GDataEntryCalendarEvent calendarEvent];
+    
+    // set a title, description, and author
+    UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
+    AccountInfoDto *accountInfoDto = [manager accountWithId:accountId];
+    
+    NSString *title =[NSString stringWithFormat:@"%@の予防接種",accountInfoDto.name];
+    [newEvent setTitle:[GDataTextConstruct textConstructWithString:title]];
+    
+    //description
+    [newEvent setContent:[GDataEntryContent textConstructWithString:@"test content"]];
+    
+    //開始、終了時間を指定する(00:00~00:00にすれば終日になる)
+    NSDate *anHourFromNow = [NSDate dateWithTimeIntervalSinceNow:60*60*24];
+    GDataDateTime *startDateTime = [GDataDateTime dateTimeWithDate:[NSDate date]
+                                                          timeZone:[NSTimeZone systemTimeZone]];
+    GDataDateTime *endDateTime = [GDataDateTime dateTimeWithDate:anHourFromNow
+                                                        timeZone:[NSTimeZone systemTimeZone]];
+    GDataWhen *when = [GDataWhen whenWithStartTime:startDateTime
+                                           endTime:endDateTime];
+    [newEvent addTime:when];
+    
+    [self fetchEventWithEvent:newEvent];
+}
+-(void)fetchEventWithEvent:(GDataEntryCalendarEvent *)event
+{
+    if (event) {
+        [service fetchEntryByInsertingEntry:event
+                                 forFeedURL:tmpURL
+                                   delegate:self
+                          didFinishSelector:@selector(ticket:finishedWithObject:error:)];
+    }
+}
+//イベント追加処理後のコールバック
+- (void)ticket:(GDataServiceTicket *)ticket finishedWithObject:(GDataObject *)object error:(NSError *)error {
+    FUNK();
+    
+    if (error) {
+        [SVProgressHUD showErrorWithStatus:@"同期失敗．．．"];
+        return;
+    }
+    NSLog(@"success");
+    
+    // すべての予約を同期し終えたら完了する
+    // そうでない場合は引き続き同期
+    if(appointments.count != 0){
+        //arrayの先頭要素を削除
+        [appointments removeObjectAtIndex:0];
+        [self createAndFetchEvent];
+        return;
+    }
+    
+    [SVProgressHUD dismiss];
+    [SVProgressHUD showSuccessWithStatus:@"同期完了！"];
+}
+
 
 @end

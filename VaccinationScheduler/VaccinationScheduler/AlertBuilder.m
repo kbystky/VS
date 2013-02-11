@@ -54,7 +54,7 @@
             message = @"新規にアカウントを作成するには\n設定画面からアカウントを\n削除してください。";
             break;
         case ALERTTYPE_DEMAND_FILLACCOUNTINFO:
-            message = @"アカウントの情報を入力してください。";
+            message = @"アカウント情報を入力してください。";
             break;
         case ALERTTYPE_DELETE_ACCOUNT:
             message = @"アカウントを削除すると予約情報\nなどがすべて削除されます。";

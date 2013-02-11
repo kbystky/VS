@@ -12,6 +12,7 @@
 
 -(id)init;
 - (NSArray *)appointmentsDtoWithAccountId:(NSInteger)accountid;
+- (NSArray *)allAppointmentsData;
 - (void)saveAppointmentWithAccountId:(NSInteger)accountid times:(NSInteger)times  appointmentDate:(NSString *)appointmentDate  consultationDate:(NSString *)consultationDate vaccinationDto:(VaccinationDto *)vcDto;
 - (void)updateAppointmentWithCurrentAppointmentDto:(AccountAppointmentDto *)dto newAppointmentDate:(NSString *)appointmentDate  newConsultationDate:(NSString *)consultationDate;
 - (void)removeAppointmentWithAppointmentDto:(AccountAppointmentDto *)dto;

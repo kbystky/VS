@@ -262,14 +262,9 @@ NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
 }
 
 #pragma mark - ****** Notification setting ******
--(BOOL)saveNotificationTimingWithTimingType:(NSInteger)type{
+-(void)saveNotificationTimingWithTimingType:(NSInteger)type{
     [defaults setObject:[NSNumber numberWithInt:type] forKey:KEY_NOTIFICATION_TIMING_TYPE];
-    BOOL successful = [defaults synchronize];
-    if (successful) {
-        return YES;
-    }else{
-        return NO;
-    }
+    [defaults synchronize];
 }
 
 -(NSInteger)notificationTiming

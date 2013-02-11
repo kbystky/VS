@@ -13,6 +13,7 @@
 @interface NotificationSettingViewController ()
 {
     NSInteger notificatoinTimingType;
+    UserDefaultsManager *userDefaultManager;
 }
 @property (strong, nonatomic) IBOutlet UITableView *tableView;
 
@@ -34,16 +35,14 @@
     [super viewDidLoad];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
-    UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];                                
-    notificatoinTimingType = manager.notificationTiming;
+    userDefaultManager = [[UserDefaultsManager alloc]init];
+    notificatoinTimingType = userDefaultManager.notificationTiming;
 }
 
 - (void)viewDidUnload
 {
     [self setTableView:nil];
     [super viewDidUnload];
-    // Release any retained subviews of the main view.
-    // e.g. self.myOutlet = nil;
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
@@ -67,15 +66,15 @@
     if(indexPath.row == 0){
         cell.textLabel.text = @"当日";
         cell.detailTextLabel.text = @"当日の7時に通知します";
-    }    
+    }
     if(indexPath.row == 1){
         cell.textLabel.text = @"前日";
         cell.detailTextLabel.text = @"前日の17時に通知します";
-    }    
+    }
     if(indexPath.row == 2){
         cell.textLabel.text = @"発表用";
         cell.detailTextLabel.text = @"設定した10秒後に通知します";
-    }    
+    }
     if(indexPath.row == notificatoinTimingType){
         cell.accessoryType = UITableViewCellAccessoryCheckmark;
     }
@@ -85,36 +84,34 @@
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
-    if(cell.accessoryType == UITableViewCellAccessoryNone){
+    if(cell.accessoryType != UITableViewCellAccessoryNone){
         NSLog(@"NONE tap");
-        if(indexPath.row == 0 ){
-            cell.accessoryType = UITableViewCellAccessoryCheckmark;
-            [self saveNotificationTimingTypeWithSelectedType:indexPath.row];
-            
-            indexPath = [NSIndexPath indexPathForRow:1 inSection:0];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
-            indexPath = [NSIndexPath indexPathForRow:2 inSection:0];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
-        }else
-        if(indexPath.row == 1 ){
-            cell.accessoryType = UITableViewCellAccessoryCheckmark;
-            [self saveNotificationTimingTypeWithSelectedType:indexPath.row];
-            
-            indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
-            indexPath = [NSIndexPath indexPathForRow:2 inSection:0];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
-        }else    
-        if(indexPath.row == 2 ){
-            cell.accessoryType = UITableViewCellAccessoryCheckmark;
-            [self saveNotificationTimingTypeWithSelectedType:indexPath.row];
-            
-            indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
-            indexPath = [NSIndexPath indexPathForRow:1 inSection:0];
-            [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
-        }
-  }
+        [self performSelector:@selector(_deselectTableRow:) withObject:tableView afterDelay:0.1f];
+        return;
+    }
+    cell.accessoryType = UITableViewCellAccessoryCheckmark;
+    LocalNotificationManager *localNotificationManager = [[LocalNotificationManager alloc]init];
+    [localNotificationManager changeAllNotificationFireDateWithTimingType:indexPath.row];
+    if(indexPath.row == 0 ){
+        [self saveNotificationTimingTypeWithSelectedType:indexPath.row];
+        indexPath = [NSIndexPath indexPathForRow:1 inSection:0];
+        [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
+        indexPath = [NSIndexPath indexPathForRow:2 inSection:0];
+        [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
+    }else if(indexPath.row == 1 ){
+        [self saveNotificationTimingTypeWithSelectedType:indexPath.row];
+        indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+        [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
+        indexPath = [NSIndexPath indexPathForRow:2 inSection:0];
+        [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
+    }else if(indexPath.row == 2 ){
+        [self saveNotificationTimingTypeWithSelectedType:indexPath.row];
+        indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+        [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
+        indexPath = [NSIndexPath indexPathForRow:1 inSection:0];
+        [tableView cellForRowAtIndexPath:indexPath].accessoryType =UITableViewCellAccessoryNone;
+    }
+    [self performSelector:@selector(_deselectTableRow:) withObject:tableView afterDelay:0.1f];
 }
 
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section{
@@ -125,8 +122,13 @@
 }
 
 -(void)saveNotificationTimingTypeWithSelectedType:(NSInteger)type{
-    UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
-    [manager saveNotificationTimingWithTimingType:type];
+   userDefaultManager = [[UserDefaultsManager alloc]init];
+    [userDefaultManager saveNotificationTimingWithTimingType:type];
+}
+
+
+- (void) _deselectTableRow:(UITableView *)tableView {
+    [tableView deselectRowAtIndexPath:[tableView indexPathForSelectedRow] animated:YES];
 }
 
 @end

@@ -30,7 +30,7 @@
 - (NSDictionary *)googleAccountData;
 -(void)removeGoogleAccountData;
 
--(BOOL)saveNotificationTimingWithTimingType:(NSInteger)type;
+-(void)saveNotificationTimingWithTimingType:(NSInteger)type;
 -(NSInteger)notificationTiming;
 @end
 

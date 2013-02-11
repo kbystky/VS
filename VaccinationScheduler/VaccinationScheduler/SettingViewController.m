@@ -17,7 +17,7 @@
 #import "StringConst.h"
 #import "AccountInfoDto.h"
 typedef enum{
-    SECTION_ACCOUNT=1,
+    SECTION_ACCOUNT=0,
     SECTION_GCAL_SYNC,
     SECTION_NOTIFICATION
 }TypeOfSection;
@@ -134,13 +134,8 @@ typedef enum{
     
     if(indexPath.section == SECTION_ACCOUNT){
         AccountSettingCell *acCell = [[AccountSettingCell alloc]init];
-        //del
-//        NSDictionary *account = [accountDataSource objectAtIndex:indexPath.row];
-//        acCell.textLabel.text = [account objectForKey:KEY_NAME];
-
         AccountInfoDto *dto = [accountDataSource objectAtIndex:indexPath.row];
         acCell.textLabel.text = dto.name;
-
         return acCell;
     }
     
@@ -163,32 +158,26 @@ typedef enum{
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if(indexPath.section == SECTION_ACCOUNT){
-        //アカウント編集
-//        NSDictionary *account = [accountDataSource objectAtIndex:indexPath.row];
-//        for(NSString *key in [account allKeys]){
-//            NSLog(@"key %@ obj %@",key,[account objectForKey:key]);
-//        }
-//        
-
         AccountInfoDto *dto = [accountDataSource objectAtIndex:indexPath.row];
-
         AccountViewController *accountViewController =
         [[AccountViewController alloc]initWithViewControllerType:LIST_VC 
                                                         editType:EDITTYPE_EDIT
                                                      accountInfo:dto];
         accountViewController.delegate = self;
         [self.navigationController pushViewController:accountViewController animated:YES];
+        return;
     }
     
     if(indexPath.section == SECTION_GCAL_SYNC){
-        NSLog(@"check!!!");
         GCalSyncViewController *gCalSyncViewController = [[GCalSyncViewController alloc]init];
         [self.navigationController pushViewController:gCalSyncViewController animated:YES];
+        return;
     }
     
     if(indexPath.section == SECTION_NOTIFICATION){
         NotificationSettingViewController *notificationSettingViewController = [[NotificationSettingViewController alloc]init];
         [self.navigationController pushViewController:notificationSettingViewController animated:YES];
+        return;
     }
 }
 -(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section{
@@ -208,15 +197,13 @@ typedef enum{
 #pragma mark custom ViewController delegate
 -(void)dismissAccountViewController:(AccountViewController *)viewController
 {
-    //    [viewController dismissModalViewControllerAnimated:YES];
     [viewController.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark notification detail string
 
 -(NSString *)notificationDetailString{
-    NSLog(@"test");
-    UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
+    FUNK();
     NSInteger type = manager.notificationTiming;
     switch (type) {
         case NOTIFICATION_TIMING_TYPE_TODAY:

@@ -164,9 +164,14 @@
                                    vaccinationDto:vaccinationDto];
             
             //notificationに登録
-            //        LocalNotificationManager *manager = [[LocalNotificationManager alloc]init];
-            //        [manager createNotificationWithRecordDate:self.appointmentDayTextField.text accountId:accountId];
-            
+            AccountAppointmentDto *saveAppointmentDto = [[AccountAppointmentDto alloc]init];
+            saveAppointmentDto.accountId =accountInfoDto.accountId;
+            saveAppointmentDto.times = [self.finishTimesLable.text intValue];
+            saveAppointmentDto.appointmentDate= self.appointmentDayTextField.text;
+            saveAppointmentDto.vcId = vaccinationDto.vcId;
+
+            LocalNotificationManager *manager = [[LocalNotificationManager alloc]init];
+            [manager createNotificationWithRecordDate:self.appointmentDayTextField.text appointmentDto:saveAppointmentDto];
         }
         
         [self.navigationController popViewControllerAnimated:YES];

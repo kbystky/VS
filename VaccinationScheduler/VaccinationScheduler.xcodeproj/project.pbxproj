@@ -41,6 +41,8 @@
 		B00AB17416C9214400B3A574 /* day_week.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB17316C9214400B3A574 /* day_week.png */; };
 		B00AB17616C9238000B3A574 /* sanday_week.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB17516C9238000B3A574 /* sanday_week.png */; };
 		B00AB17816C9238300B3A574 /* saturday_week.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB17716C9238300B3A574 /* saturday_week.png */; };
+		B00AB17A16C92BD000B3A574 /* targetday.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB17916C92BD000B3A574 /* targetday.png */; };
+		B00AB17C16C931AE00B3A574 /* selectday.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB17B16C931AE00B3A574 /* selectday.png */; };
 		B02C970E166BA12E006F6893 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B02C970D166BA12E006F6893 /* UIKit.framework */; };
 		B02C9710166BA12E006F6893 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B02C970F166BA12E006F6893 /* Foundation.framework */; };
 		B02C9712166BA12E006F6893 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B02C9711166BA12E006F6893 /* CoreGraphics.framework */; };
@@ -485,6 +487,8 @@
 		B00AB17316C9214400B3A574 /* day_week.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = day_week.png; sourceTree = "<group>"; };
 		B00AB17516C9238000B3A574 /* sanday_week.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sanday_week.png; sourceTree = "<group>"; };
 		B00AB17716C9238300B3A574 /* saturday_week.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = saturday_week.png; sourceTree = "<group>"; };
+		B00AB17916C92BD000B3A574 /* targetday.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = targetday.png; sourceTree = "<group>"; };
+		B00AB17B16C931AE00B3A574 /* selectday.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = selectday.png; sourceTree = "<group>"; };
 		B02C9709166BA12E006F6893 /* VaccinationScheduler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VaccinationScheduler.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B02C970D166BA12E006F6893 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		B02C970F166BA12E006F6893 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -948,10 +952,10 @@
 		55DD2F7E167EF94F0008F374 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				B02D61C216B54BAA00CD595D /* Service */,
-				55F8E0F4168017DC003C71E4 /* Logic */,
 				55DD2F70167EF3DB0008F374 /* Dao */,
 				55DD2F74167EF40D0008F374 /* Dto */,
+				55F8E0F4168017DC003C71E4 /* Logic */,
+				B02D61C216B54BAA00CD595D /* Service */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -979,6 +983,8 @@
 		B00AB16216C9170300B3A574 /* Images */ = {
 			isa = PBXGroup;
 			children = (
+				B00AB17B16C931AE00B3A574 /* selectday.png */,
+				B00AB17916C92BD000B3A574 /* targetday.png */,
 				B00AB17716C9238300B3A574 /* saturday_week.png */,
 				B00AB17516C9238000B3A574 /* sanday_week.png */,
 				B00AB17316C9214400B3A574 /* day_week.png */,
@@ -1039,9 +1045,6 @@
 				550A68371681ACE500EC0031 /* Controller */,
 				5513DB2C1682C2A200E0D745 /* Headers */,
 				55DD2F7E167EF94F0008F374 /* Model */,
-				5513DC6D1682D3B200E0D745 /* SVProgressHUD.bundle */,
-				5513DC6E1682D3B200E0D745 /* SVProgressHUD.h */,
-				5513DC6F1682D3B200E0D745 /* SVProgressHUD.m */,
 				555E61EF16AFB2420022F429 /* Util */,
 				B0F4B65F167DA3CD00E35CD3 /* View */,
 			);
@@ -1174,6 +1177,9 @@
 		B0F4B65F167DA3CD00E35CD3 /* View */ = {
 			isa = PBXGroup;
 			children = (
+				5513DC6D1682D3B200E0D745 /* SVProgressHUD.bundle */,
+				5513DC6E1682D3B200E0D745 /* SVProgressHUD.h */,
+				5513DC6F1682D3B200E0D745 /* SVProgressHUD.m */,
 				553BF80D16814B5A00BD3A71 /* AccountSettingCell.h */,
 				553BF80E16814B5A00BD3A71 /* AccountSettingCell.m */,
 				B02C9733166BAD13006F6893 /* CalendarView.h */,
@@ -1314,6 +1320,8 @@
 				B00AB17416C9214400B3A574 /* day_week.png in Resources */,
 				B00AB17616C9238000B3A574 /* sanday_week.png in Resources */,
 				B00AB17816C9238300B3A574 /* saturday_week.png in Resources */,
+				B00AB17A16C92BD000B3A574 /* targetday.png in Resources */,
+				B00AB17C16C931AE00B3A574 /* selectday.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

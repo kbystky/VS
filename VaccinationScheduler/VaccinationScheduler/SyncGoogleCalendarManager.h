@@ -7,7 +7,11 @@
 //
 
 #import <Foundation/Foundation.h>
-
+@class GDataServiceGoogleCalendar;
 @interface SyncGoogleCalendarManager : NSObject
+
 -(void)syncGCalWithAccountId:(NSInteger)_accoutId vaccinationName:(NSString *)vName;
+
++ (id)sharedManager;
+
 @end

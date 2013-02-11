@@ -22,6 +22,11 @@ enum {
 #import "GData.h"
 #import "SyncGoogleCalendarManager.h"
 #import "StringConst.h"
+
+#define SECTION_NUMBER_TOTAL 3
+#define SECTION_NUMBER_ACCOUNT_INFO 2
+#define SECTION_NUMBER_ACTION 1
+
 @interface GCalSyncViewController ()
 {
     UserDefaultsManager *manager;
@@ -47,7 +52,6 @@ enum {
 
 - (void)viewDidLoad
 {
-    FUNK();
     [super viewDidLoad];
     self.tableView.delegate = self;
     self.tableView.dataSource = self;
@@ -68,27 +72,25 @@ enum {
 #pragma mark table view delegate
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 3;
+    return SECTION_NUMBER_TOTAL;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
     if(section == SECTION_ACCOUNT){
-        return  2;
+        return  SECTION_NUMBER_ACCOUNT_INFO;
     }
     if(section == SECTION_DO_SYNC){
-        return 1;
+        return SECTION_NUMBER_ACTION;
     }
-    
     if(section == SECTION_REMOVE_SAVE_DATA){
-        return 1;
+        return SECTION_NUMBER_ACTION;
     }
     return 0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)theTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"dele");
     static NSString *CellIdentifier = @"Cell";
     UITableViewCell *cell = [theTableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
@@ -150,19 +152,18 @@ enum {
     if(indexPath.section == SECTION_ACCOUNT){
         //IDとパスワードイベントハンドラ    
         if(indexPath.row == ROW_INDEX_ID){
-            //idのtextFieldにフォーカスを当てる
             [self.idTextField becomeFirstResponder];
+            return;
         }
         if(indexPath.row == ROW_INDEX_PASSWORD){
-            //パスワードのtextFieldにフォーカスを当てる
             [self.passwordTextField becomeFirstResponder];
+            return;
         }
     }
+    
     if(indexPath.section == SECTION_DO_SYNC){
-        
         if(self.idTextField.text.length !=0 && self.passwordTextField.text.length !=0){
             //アカウント情報を取得
-            manager = [[UserDefaultsManager alloc]init];
             if(!manager.googleAccountDataIsExist){
                 [manager saveGoogleAccountDataWithId:self.idTextField.text password:self.passwordTextField.text];
             }
@@ -171,25 +172,26 @@ enum {
             //GCalロジックのチケット取得メソッドよんで(同期処理)
             //errorはハンドリングして
             //戻ってきます
-            SyncGoogleCalendarManager *syncGCalManager = [[SyncGoogleCalendarManager alloc]init];
+            SyncGoogleCalendarManager *syncGCalManager = [SyncGoogleCalendarManager sharedManager];
             [syncGCalManager syncGCalWithAccountId:1 vaccinationName:@"test"];
+//            SyncGoogleCalendarManager *syncGCalManager = [[SyncGoogleCalendarManager alloc]init];
+//            [syncGCalManager syncGCalWithAccountId:1 vaccinationName:@"test"];
         }else{
             UIAlertView *alert = [AlertBuilder createAlertWithType:ALERTTYPE_DEMAND_FILLACCOUNTINFO];
             [alert show];
         }
         [self performSelector:@selector(_deselectTableRow:) withObject:tableView afterDelay:0.1f];
+        return;
     }
     
     //履歴を削除する
     if(indexPath.section == SECTION_REMOVE_SAVE_DATA){
-        manager = [[UserDefaultsManager alloc]init];
         [manager removeGoogleAccountData];
         [self.tableView reloadData];
         [self performSelector:@selector(_deselectTableRow:) withObject:tableView afterDelay:0.1f];
+        return;
     }
-    
 }
-
 - (void) _deselectTableRow:(UITableView *)tableView {
     [tableView deselectRowAtIndexPath:[tableView indexPathForSelectedRow] animated:YES];
 }
@@ -198,16 +200,6 @@ enum {
         return @"Googleアカウント";
     }
     return nil;
-}
-
-- (void)textFieldDidEndEditing:(UITextField *)textField {
-    // 入力された情報をセーブする
-    //    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    //    if (textField.tag == 0) {
-    //        [defaults setObject:textField.text forKey:@"USERNAME"];
-    //    } else if (textField.tag == 1) {
-    //        [defaults setObject:textField.text forKey:@"PASSWORD"];
-    //    }
 }
 
 // キーボードを隠す

@@ -63,6 +63,11 @@ AccountAppointmentDao *dao = nil;
     
     return appointmentsDto;
 }
+
+- (NSArray *)allAppointmentsData
+{
+    return [dao allAppointmentsData];
+}
 - (void)Logger:(AccountAppointmentDto *)dto
 {
     FUNK();
