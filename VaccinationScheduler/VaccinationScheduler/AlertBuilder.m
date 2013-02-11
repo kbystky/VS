@@ -63,7 +63,7 @@
             message = @"予約日を入力してください。";
             break;
         case ALERTTYPE_DELETE_APPOINTMENT:
-            message = @"削除された予約情報は復元できません。";
+            message = @"削除された予約情報は復元できません。また、この予防接種の削除以降の予約情報も削除されます。";
             break;
             
     }

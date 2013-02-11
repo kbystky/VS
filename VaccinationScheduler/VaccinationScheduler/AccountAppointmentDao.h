@@ -23,4 +23,5 @@
 -(BOOL)updateAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto;
 - (BOOL)removeAppointmentWithAppointmentId:(NSInteger)appointmentId;
 -(BOOL)removeAppointmentsWithAccoutId:(NSInteger)accountId;
+-(BOOL)removeAppointmentsWithAppointmens:(NSArray *)appointmentsDto;
 @end

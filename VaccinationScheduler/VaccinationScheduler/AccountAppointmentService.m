@@ -83,7 +83,7 @@ AccountAppointmentDao *dao = nil;
     AccountAppointmentDto *dto = [[AccountAppointmentDto alloc]init];
     dto.accountId = accountid;
     dto.vcId = vcDto.vcId;
-    dto.times = times + 1; //引数の値は現在の終了回数なので +1 する
+    dto.times = times;
     dto.appointmentDate = appointmentDate;
     dto.consultationDate = consultationDate;
     dto.isSynced = NO;
@@ -101,7 +101,37 @@ AccountAppointmentDao *dao = nil;
 
 - (void)removeAppointmentWithAppointmentDto:(AccountAppointmentDto *)dto
 {
-    [dao removeAppointmentWithAppointmentId:dto.apId];
+    //その予約が最新か確認する
+    //最新でなかったら以降の予約も削除が必要
+    //全予約取得
+    AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
+    NSArray *appointments = [dao allAppointmentsData];
+    NSMutableArray *targetAppointments = [[NSMutableArray alloc]init];
+    NSMutableArray *deleteAppointments = [[NSMutableArray alloc]init];
+    BOOL isNewestAppointment = YES;
+    
+    for(AccountAppointmentDto *appDto in appointments){
+        //アカウントと接種が一致
+        if(dto.accountId == appDto.accountId && dto.vcId == appDto.vcId){
+            [targetAppointments addObject:appDto];
+        }
+    }
+    
+    for(AccountAppointmentDto *appDto in targetAppointments){
+        if(appDto.times > dto.times){
+            [deleteAppointments addObject:appDto];
+            isNewestAppointment = NO;
+        }
+        NSLog(@"%d %d %d",appDto.apId,appDto.vcId,appDto.accountId);
+    }
+    
+    if(isNewestAppointment){
+        [dao removeAppointmentWithAppointmentId:dto.apId];
+    }else{
+        [deleteAppointments addObject:dto];
+        [dao removeAppointmentsWithAppointmens:deleteAppointments];
+    }
+    
 }
 
 - (void)removeAppointmentWithAccountId:(NSInteger)accountId
@@ -113,7 +143,7 @@ AccountAppointmentDao *dao = nil;
 - (NSArray *)monthDataWithStartYMD:(NSString *)startYmd endYM:(NSString *)endYmd
 {
     FUNK();
-
+    
     NSMutableArray *result = [[NSMutableArray alloc]init];
     
     //date に変換
@@ -123,7 +153,7 @@ AccountAppointmentDao *dao = nil;
     // Daoから全Appointmentを取得
     AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
     NSArray *appointments = [dao allAppointmentsData];
-
+    
     // 各Appointmentの日付をNSDAteに変換・比較
     for(AccountAppointmentDto *dto in appointments){
         // check startDate <= dto.appDate <= endDate
@@ -133,9 +163,9 @@ AccountAppointmentDao *dao = nil;
             [result addObject:dto];
         }
     }
-
+    
     for(AccountAppointmentDto *dto in result){[self Logger:dto];}
-
+    
     //dbに登録してあるvcIDを抽出
     NSMutableArray *vaccinationsId = [[NSMutableArray alloc]init];
     for(AccountAppointmentDto *dto in result){
@@ -151,7 +181,7 @@ AccountAppointmentDao *dao = nil;
         aaDto.vaccinationDto = [vaccinations objectAtIndex:index];
         index++;
     }
-
+    
     return result;
 }
 

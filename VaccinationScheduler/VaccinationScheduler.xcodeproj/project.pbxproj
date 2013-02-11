@@ -34,6 +34,13 @@
 		55F8E0EF168013FF003C71E4 /* AlertBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F8E0EE168013FF003C71E4 /* AlertBuilder.m */; };
 		55F8E10416806C78003C71E4 /* DetailListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 55F8E10216806C78003C71E4 /* DetailListViewController.m */; };
 		55F8E10516806C78003C71E4 /* DetailListViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 55F8E10316806C78003C71E4 /* DetailListViewController.xib */; };
+		B00AB16A16C919A400B3A574 /* saturday.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB16916C919A400B3A574 /* saturday.png */; };
+		B00AB16D16C91C1300B3A574 /* sanday.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB16B16C91C1300B3A574 /* sanday.png */; };
+		B00AB17016C91D8600B3A574 /* otherday.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB16F16C91D8600B3A574 /* otherday.png */; };
+		B00AB17216C91DCF00B3A574 /* day.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB17116C91DCF00B3A574 /* day.png */; };
+		B00AB17416C9214400B3A574 /* day_week.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB17316C9214400B3A574 /* day_week.png */; };
+		B00AB17616C9238000B3A574 /* sanday_week.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB17516C9238000B3A574 /* sanday_week.png */; };
+		B00AB17816C9238300B3A574 /* saturday_week.png in Resources */ = {isa = PBXBuildFile; fileRef = B00AB17716C9238300B3A574 /* saturday_week.png */; };
 		B02C970E166BA12E006F6893 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B02C970D166BA12E006F6893 /* UIKit.framework */; };
 		B02C9710166BA12E006F6893 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B02C970F166BA12E006F6893 /* Foundation.framework */; };
 		B02C9712166BA12E006F6893 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B02C9711166BA12E006F6893 /* CoreGraphics.framework */; };
@@ -471,6 +478,13 @@
 		55F8E10116806C78003C71E4 /* DetailListViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DetailListViewController.h; sourceTree = "<group>"; };
 		55F8E10216806C78003C71E4 /* DetailListViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DetailListViewController.m; sourceTree = "<group>"; };
 		55F8E10316806C78003C71E4 /* DetailListViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DetailListViewController.xib; sourceTree = "<group>"; };
+		B00AB16916C919A400B3A574 /* saturday.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = saturday.png; sourceTree = "<group>"; };
+		B00AB16B16C91C1300B3A574 /* sanday.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sanday.png; sourceTree = "<group>"; };
+		B00AB16F16C91D8600B3A574 /* otherday.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = otherday.png; sourceTree = "<group>"; };
+		B00AB17116C91DCF00B3A574 /* day.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = day.png; sourceTree = "<group>"; };
+		B00AB17316C9214400B3A574 /* day_week.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = day_week.png; sourceTree = "<group>"; };
+		B00AB17516C9238000B3A574 /* sanday_week.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = sanday_week.png; sourceTree = "<group>"; };
+		B00AB17716C9238300B3A574 /* saturday_week.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = saturday_week.png; sourceTree = "<group>"; };
 		B02C9709166BA12E006F6893 /* VaccinationScheduler.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VaccinationScheduler.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B02C970D166BA12E006F6893 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		B02C970F166BA12E006F6893 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -962,6 +976,20 @@
 			name = Logic;
 			sourceTree = "<group>";
 		};
+		B00AB16216C9170300B3A574 /* Images */ = {
+			isa = PBXGroup;
+			children = (
+				B00AB17716C9238300B3A574 /* saturday_week.png */,
+				B00AB17516C9238000B3A574 /* sanday_week.png */,
+				B00AB17316C9214400B3A574 /* day_week.png */,
+				B00AB17116C91DCF00B3A574 /* day.png */,
+				B00AB16F16C91D8600B3A574 /* otherday.png */,
+				B00AB16B16C91C1300B3A574 /* sanday.png */,
+				B00AB16916C919A400B3A574 /* saturday.png */,
+			);
+			name = Images;
+			sourceTree = "<group>";
+		};
 		B02C96FE166BA12E006F6893 = {
 			isa = PBXGroup;
 			children = (
@@ -1003,6 +1031,7 @@
 		B02C9713166BA12E006F6893 /* VaccinationScheduler */ = {
 			isa = PBXGroup;
 			children = (
+				B00AB16216C9170300B3A574 /* Images */,
 				B02C971C166BA12E006F6893 /* AppDelegate.h */,
 				B02C971D166BA12E006F6893 /* AppDelegate.m */,
 				55DD2F83167F06AD0008F374 /* Builder */,
@@ -1278,6 +1307,13 @@
 				553BF8151681830000BD3A71 /* GCalSyncViewController.xib in Resources */,
 				553BF81A168183FB00BD3A71 /* NotificationSettingViewController.xib in Resources */,
 				55820C7816ACCFC100CD1A50 /* Default-568h@2x.png in Resources */,
+				B00AB16A16C919A400B3A574 /* saturday.png in Resources */,
+				B00AB16D16C91C1300B3A574 /* sanday.png in Resources */,
+				B00AB17016C91D8600B3A574 /* otherday.png in Resources */,
+				B00AB17216C91DCF00B3A574 /* day.png in Resources */,
+				B00AB17416C9214400B3A574 /* day_week.png in Resources */,
+				B00AB17616C9238000B3A574 /* sanday_week.png in Resources */,
+				B00AB17816C9238300B3A574 /* saturday_week.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

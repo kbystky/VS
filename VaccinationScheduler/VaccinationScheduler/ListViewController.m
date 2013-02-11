@@ -36,6 +36,11 @@ typedef enum{
     LIST_TYPE_RESERVATION,
 }ListType;
 
+typedef enum{
+    SECTION_TYPE_NOTYET=0,
+    SECTION_TYPE_DONE,
+}TableViewSection;
+
 @interface ListViewController ()
 {
     UIActionSheet *actionSheet;
@@ -319,9 +324,18 @@ typedef enum{
 #pragma mark table view delegate
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
+    if(section == SECTION_TYPE_DONE){
+        return [[listDatasource objectAtIndex:SECTION_TYPE_DONE] count];
+    }else if(section == SECTION_TYPE_NOTYET){
+        return [[listDatasource objectAtIndex:SECTION_TYPE_NOTYET] count];
+    }
     return listDatasource.count;
 }
 
+-(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 2;
+}
 - (UITableViewCell *)tableView:(UITableView *)theTableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     
@@ -332,13 +346,27 @@ typedef enum{
     
     if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
         
-        VaccinationDto *dto = [listDatasource objectAtIndex:indexPath.row];
-        cell.textLabel.text = dto.name;
+        if(indexPath.section== SECTION_TYPE_DONE){
+            VaccinationDto *dto = [[listDatasource objectAtIndex:SECTION_TYPE_DONE] objectAtIndex:indexPath.row];
+            cell.textLabel.text = dto.name;
+            cell.userInteractionEnabled = NO;
+        }else if(indexPath.section == SECTION_TYPE_NOTYET){
+            VaccinationDto *dto = [[listDatasource objectAtIndex:SECTION_TYPE_NOTYET] objectAtIndex:indexPath.row];
+            cell.textLabel.text = dto.name;
+        }
         
     }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
-        AccountAppointmentDto *dto = [listDatasource objectAtIndex:indexPath.row];
+
+        NSArray *divSectionArray;
+        if(indexPath.section== SECTION_TYPE_DONE){
+            divSectionArray = [listDatasource objectAtIndex:SECTION_TYPE_DONE];
+        }else if(indexPath.section == SECTION_TYPE_NOTYET){
+            divSectionArray = [listDatasource objectAtIndex:SECTION_TYPE_NOTYET];
+        }
+        AccountAppointmentDto *dto = [divSectionArray objectAtIndex:indexPath.row];
         cell.textLabel.text = dto.vaccinationDto.name;
         NSLog(@"index path %d label :%@",indexPath.row ,dto.vaccinationDto.name);
+        
     }
     return cell;
 }
@@ -351,9 +379,11 @@ typedef enum{
     
     if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
         type = TYPE_EDIT;
+        NSLog(@"section : %d   row : %d",indexPath.section,indexPath.row);
         
         //選択されたappDtoからvaccinationDto を生成し引数に渡す
-        AccountAppointmentDto *selectedDto = [listDatasource objectAtIndex:indexPath.row];
+        AccountAppointmentDto *selectedDto = [[listDatasource objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+        NSLog(@"selected %d %d",selectedDto.vcId,selectedDto.times);
         VaccinationDto *dto;
         for(VaccinationDto *d in vaccinationsDto){
             if(d.vcId == selectedDto.vcId){
@@ -361,16 +391,37 @@ typedef enum{
                 break;
             }
         }
-        detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:dto appointmentDto:[listDatasource objectAtIndex:indexPath.row] editType:type];
-
-    }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
-        type = TYPE_CREATE;
+        detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:dto appointmentDto:selectedDto editType:type];
         
-        detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:[listDatasource objectAtIndex:indexPath.row] editType:type];
+    }else if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
+        if(indexPath.section== SECTION_TYPE_DONE){
+            // なんもしない
+        }else if(indexPath.section == SECTION_TYPE_NOTYET){
+            type = TYPE_CREATE;
+            VaccinationDto *dto = [[listDatasource objectAtIndex:SECTION_TYPE_NOTYET] objectAtIndex:indexPath.row];
+            detailListViewController = [[DetailListViewController alloc]initWithAccountInfoDto:currentAccountInfoDto vaccinationDto:dto editType:type];
+        }
     }
-    
-    
     [self.navigationController pushViewController:detailListViewController animated:YES];
+}
+
+-(NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section
+{
+    if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_ALL){
+        if(section == SECTION_TYPE_DONE){
+            return @"完了";
+        }else if(section == SECTION_TYPE_NOTYET){
+            return @"未完了";
+        }
+    }
+    if(self.listShowTypeSwitchSegmentC.selectedSegmentIndex == LIST_TYPE_RESERVATION){
+        if(section == SECTION_TYPE_DONE){
+            return @"実施日入力済み";
+        }else if(section == SECTION_TYPE_NOTYET){
+            return @"実施日未入力";
+        }
+    }
+    return nil;
 }
 #pragma mark *****************  other ******************
 #pragma mark account
@@ -407,10 +458,11 @@ typedef enum{
     if(selectedIndex == LIST_TYPE_ALL){
         NSLog(@"change source all");
         listDatasource =  vaccinationsDto;
-        
+        [self categorizeVaccination];
     }else if(selectedIndex == LIST_TYPE_RESERVATION){
         NSLog(@"change source appoiintment");
         listDatasource = appointmentsDto;
+        [self categorizeAppointment];
     }
 }
 
@@ -426,4 +478,60 @@ typedef enum{
     return accountViewController;
 }
 
+#pragma mark vaccinations
+- (void)categorizeVaccination
+{
+    FUNK();
+    // vaccinationを抽出
+    //一致するappointmentを抽出
+    //回数比較
+    NSMutableArray *doneVaccination = [[NSMutableArray alloc]init];
+    NSMutableArray *notYeyVaccination = [[NSMutableArray alloc]init];
+    int count = 0;
+    for(VaccinationDto *vaccinationDto in vaccinationsDto){
+        for(AccountAppointmentDto *appointmentDto in appointmentsDto){
+            if(vaccinationDto.vcId == appointmentDto.vcId){
+                count++;
+            }
+        }
+        
+        if(count == vaccinationDto.needTimes){
+            [doneVaccination addObject:vaccinationDto];
+        }else{
+            [notYeyVaccination addObject:vaccinationDto];
+        }
+        count = 0;
+    }
+    listDatasource = [[NSArray alloc]initWithObjects:notYeyVaccination,doneVaccination, nil];
+}
+
+- (void)categorizeAppointment
+{
+    FUNK();
+    NSMutableArray *doneVaccination = [[NSMutableArray alloc]init];
+    NSMutableArray *notYeyVaccination = [[NSMutableArray alloc]init];
+    for(AccountAppointmentDto *appointmentDto in appointmentsDto){
+        if(appointmentDto.consultationDate.length == 0){
+            [notYeyVaccination addObject:appointmentDto];
+        }else{
+            [doneVaccination addObject:appointmentDto];
+        }
+    }
+    listDatasource = [[NSArray alloc]initWithObjects:notYeyVaccination,doneVaccination, nil];
+}
+
 @end
+
+
+
+
+
+
+
+
+
+
+
+
+
+

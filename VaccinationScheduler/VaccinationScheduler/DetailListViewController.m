@@ -24,11 +24,14 @@
     NSString *vaccinationName;
     AccountInfoDto *accountInfoDto;
     NSInteger type;
+    BOOL wantClearTextField;
+    UITextField *selectedTextField;
 }
 @property (strong, nonatomic) IBOutlet UILabel *vaccinationNameLabel;
 @property (strong, nonatomic) IBOutlet UILabel *totalTimesLabel;
 @property (strong, nonatomic) IBOutlet UILabel *finishTimesLable;
 @property (strong, nonatomic) IBOutlet UITextField *appointmentDayTextField;
+@property (strong, nonatomic) IBOutlet UITextField *consultationDayTextField;
 @property (strong, nonatomic) IBOutlet UIButton *deleteButton;
 @property (strong, nonatomic) IBOutlet UIButton *addButton;
 
@@ -78,6 +81,10 @@
     [super viewDidLoad];
     [self viewSetting];
     self.appointmentDayTextField.delegate =self;
+    self.consultationDayTextField.delegate =self;
+    self.appointmentDayTextField.clearButtonMode = UITextFieldViewModeAlways;
+    self.consultationDayTextField.clearButtonMode = UITextFieldViewModeAlways;
+    wantClearTextField = NO;
 }
 
 -(void)viewWillAppear:(BOOL)animated{
@@ -96,6 +103,7 @@
     [self setAppointmentDayTextField:nil];
     [self setDeleteButton:nil];
     [self setAddButton:nil];
+    [self setConsultationDayTextField:nil];
     [super viewDidUnload];
 }
 
@@ -113,19 +121,21 @@
         //予約編集
         NSLog(@"EDIT TYPE");
         //TODO:これまでの受診回数を表示でいいかな？
-        NSInteger appointmentTimes = [self countOfConsultationTimes];
+        //        NSInteger appointmentTimes = [self countOfConsultationTimes];
+        NSInteger appointmentTimes = appointmentDto.times;
         NSLog(@"appointmenttimes %d",appointmentTimes);
         self.finishTimesLable.text = [NSString stringWithFormat:@"%d",appointmentTimes];
         //やっぱ何回目の受診かを表示の方が良いね
         
         self.appointmentDayTextField.text =appointmentDto.appointmentDate;
+        self.consultationDayTextField.text =appointmentDto.consultationDate;
         
     }else if (type == TYPE_CREATE){
         //新規予約作成
         //これまでの受診回数を表示
         NSInteger appointmentTimes = [self countOfConsultationTimes];
-        self.finishTimesLable.text = [NSString stringWithFormat:@"%d",appointmentTimes];
-
+        self.finishTimesLable.text = [NSString stringWithFormat:@"%d",appointmentTimes + 1];
+        
         // 削除ボタンの削除、登録ボタンの移動
         [self.deleteButton removeFromSuperview];
         CGRect addBtnFrame = self.addButton.frame;
@@ -142,15 +152,15 @@
         if(type == TYPE_EDIT){
             [service updateAppointmentWithCurrentAppointmentDto:appointmentDto
                                              newAppointmentDate:self.appointmentDayTextField.text
-                                            newConsultationDate:nil];
+                                            newConsultationDate:self.consultationDayTextField.text];
             // notification に再登録
-        
+            
         }else if (type == TYPE_CREATE){
             //登録
             [service saveAppointmentWithAccountId:accountInfoDto.accountId
                                             times:[self.finishTimesLable.text intValue]
                                   appointmentDate:self.appointmentDayTextField.text
-                                 consultationDate:nil
+                                 consultationDate:self.consultationDayTextField.text
                                    vaccinationDto:vaccinationDto];
             
             //notificationに登録
@@ -158,7 +168,7 @@
             //        [manager createNotificationWithRecordDate:self.appointmentDayTextField.text accountId:accountId];
             
         }
-
+        
         [self.navigationController popViewControllerAnimated:YES];
         return;
     }else{
@@ -167,7 +177,7 @@
 }
 
 - (IBAction)deleteButtonTap:(id)sender {
-   UIAlertView *alert = [AlertBuilder createAlertWithType:ALERTTYPE_DELETE_APPOINTMENT];
+    UIAlertView *alert = [AlertBuilder createAlertWithType:ALERTTYPE_DELETE_APPOINTMENT];
     alert.delegate = self;
     [alert show];
 }
@@ -183,9 +193,16 @@
     self.datePicker = [[UIDatePicker alloc] initWithFrame:CGRectMake(0,44,0,0)];
     self.datePicker.datePickerMode = UIDatePickerModeDate;
     
-    if(self.appointmentDayTextField.text.length != 0){
-        self.datePicker.date = [DateFormatter dateFormatWithString:self.appointmentDayTextField.text];
+    if([selectedTextField isEqual:self.appointmentDayTextField]){
+        if(self.appointmentDayTextField.text.length != 0){
+            self.datePicker.date = [DateFormatter dateFormatWithString:self.appointmentDayTextField.text];
+        }
+    }else{
+        if(self.consultationDayTextField.text.length != 0){
+            self.datePicker.date = [DateFormatter dateFormatWithString:self.consultationDayTextField.text];
+        }
     }
+    
     
     UIToolbar *pickerToolbar = [[UIToolbar alloc] initWithFrame:CGRectMake(0, 0, 320, 44)];
     pickerToolbar.barStyle = UIBarStyleBlackOpaque;
@@ -200,6 +217,7 @@
                                                               target:self
                                                               action:@selector(closePicker:)];
     [barItems addObject:doneBtn];
+    
     [pickerToolbar setItems:barItems animated:YES];
     
     [self.pickerViewPopup addSubview:pickerToolbar];
@@ -209,27 +227,42 @@
 }
 
 -(BOOL)closePicker:(id)sender {
-    self.appointmentDayTextField.text = [DateFormatter dateFormatWithDate:self.datePicker.date];
+    if([selectedTextField isEqual:self.appointmentDayTextField]){
+        self.appointmentDayTextField.text = [DateFormatter dateFormatWithDate:self.datePicker.date];
+    }else{
+        self.consultationDayTextField.text = [DateFormatter dateFormatWithDate:self.datePicker.date];
+    }
     [self.pickerViewPopup dismissWithClickedButtonIndex:0 animated:YES];
     return YES;
 }
-
 #pragma mark ************  Delegate *************
 -(BOOL)textFieldShouldBeginEditing:(UITextField *)textField
 {
-    if([textField isEqual:self.appointmentDayTextField]){
-        [self showPicker];
+    FUNK();
+    if([textField isEqual:self.appointmentDayTextField] || [textField isEqual:self.consultationDayTextField]){
+        if(!wantClearTextField){
+            selectedTextField = textField;
+            [self showPicker];
+        }
+        wantClearTextField = NO;
         return NO;
     }else{
+        wantClearTextField = NO;
         return YES;
     }
+}
+-(BOOL)textFieldShouldClear:(UITextField *)textField
+{
+    FUNK();    NSLog(@"clear");
+    wantClearTextField = YES;
+    return YES;
 }
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
     if(alertView.tag == ALERTTYPE_DELETE_APPOINTMENT && buttonIndex == BUTTON_INDEX_OK){
         AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
         [service removeAppointmentWithAppointmentDto:appointmentDto];
-
+        
         [self.navigationController popViewControllerAnimated:YES];
     }
 }
@@ -239,7 +272,7 @@
     FUNK();
     NSInteger times = 0;
     for(AccountAppointmentDto *dto in accountInfoDto.appointmentDto){
-        //NSLog(@"appoID : %d  vacciID : %d",dto.vcId,vaccinationDto.vcId);
+        NSLog(@"appoID : %d  vacciID : %d",dto.vcId,vaccinationDto.vcId);
         if(dto.vcId == vaccinationDto.vcId){
             times++;
         }

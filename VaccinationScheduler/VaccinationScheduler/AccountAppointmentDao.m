@@ -134,6 +134,34 @@
     return result;
 }
 
+-(BOOL)removeAppointmentsWithAppointmens:(NSArray *)appointmentsDto
+{
+    FUNK();
+    FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
+    [db open];
+
+    [db beginTransaction];
+    
+    BOOL isSucceeded = YES;
+    NSString  *sql = @"DELETE FROM appointment where id = ?";
+    for(AccountAppointmentDto* dto in appointmentsDto){
+        NSLog(@"apid %d",dto.apId);
+        if(![db executeUpdate:sql, [NSNumber numberWithInt:dto.apId]]){
+            isSucceeded = NO;
+            break;
+        }
+    }
+
+    if(isSucceeded){
+        [db commit];
+    }else{
+        [db rollback];
+    }
+    
+    [db close];
+    return isSucceeded;
+}
+
 //アカウント削除時に対応するデータを削除する
 -(BOOL)removeAppointmentsWithAccoutId:(NSInteger)accountId
 {

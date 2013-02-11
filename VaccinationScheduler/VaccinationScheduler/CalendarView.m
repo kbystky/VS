@@ -54,13 +54,25 @@
     NSArray *dayOfWeekString = [[NSArray alloc]initWithObjects:@"日",@"月",@"火",@"水",@"木",@"金",@"土", nil];
     for(int i = 0;i < 7;i++){
         UILabel *weekOfDayView = [[UILabel alloc]initWithFrame:CGRectMake(x, y, cellWidth, cellHeight)];
-        weekOfDayView.backgroundColor = [UIColor grayColor];
+
         weekOfDayView.text = [dayOfWeekString objectAtIndex:i];
         weekOfDayView.textAlignment = UITextAlignmentCenter;
-        //quartzcoreでborderつけてます
-        [[weekOfDayView layer] setBorderColor:[[UIColor blackColor] CGColor]];
-        [[weekOfDayView layer] setBorderWidth:1.0];
-        
+
+        //背景設定
+        UIGraphicsBeginImageContext(weekOfDayView.frame.size);
+        if(i == 0){
+            //日曜日
+            [[UIImage imageNamed:@"sanday_week.png"] drawInRect:weekOfDayView.bounds];
+        }else if(i == 6){
+            //土曜日
+            [[UIImage imageNamed:@"saturday_week.png"] drawInRect:weekOfDayView.bounds];
+        }else{
+            [[UIImage imageNamed:@"day_week.png"] drawInRect:weekOfDayView.bounds];
+        }
+        UIImage *backgroundImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        weekOfDayView.backgroundColor = [UIColor colorWithPatternImage:backgroundImage];
+
         [dayOfWeekBaseView addSubview:weekOfDayView];
         x+=cellWidth;
     }
@@ -96,14 +108,25 @@
                 x = 0;
             }
             oneDayView = [[UILabel alloc]initWithFrame:CGRectMake(x, y, cellSize, cellSize)];
-            
-            //先月、今月、来月によって背景を変更
-            if(arrayIndex == 0)
-                oneDayView.backgroundColor = [UIColor lightGrayColor];
-            else if(arrayIndex == 1)
-                oneDayView.backgroundColor = [UIColor yellowColor];
-            else if(arrayIndex == 2)
-                oneDayView.backgroundColor = [UIColor lightGrayColor];
+
+            //背景設定
+            UIGraphicsBeginImageContext(oneDayView.frame.size);
+            if(arrayIndex == 0){
+                [[UIImage imageNamed:@"otherday.png"] drawInRect:oneDayView.bounds];
+            }else if(arrayIndex == 1){
+                if(colum == 6){
+                    [[UIImage imageNamed:@"saturday.png"] drawInRect:oneDayView.bounds];
+                }else if (colum == 0){
+                    [[UIImage imageNamed:@"sanday.png"] drawInRect:oneDayView.bounds];
+                }else{
+                    [[UIImage imageNamed:@"day.png"] drawInRect:oneDayView.bounds];
+                }
+            }else if(arrayIndex == 2){
+                [[UIImage imageNamed:@"otherday.png"] drawInRect:oneDayView.bounds];
+            }
+            UIImage *backgroundImage = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
+            oneDayView.backgroundColor = [UIColor colorWithPatternImage:backgroundImage];
             
             oneDayView.text = [NSString stringWithFormat:@"%@",[[monthArray objectAtIndex:arrayIndex] objectAtIndex:i]];
             oneDayView.userInteractionEnabled = YES;
@@ -113,8 +136,8 @@
             oneDayView.tag = arrayIndex+1;
 
             //quartzcoreでborderつけてます
-            [[oneDayView layer] setBorderColor:[[UIColor blackColor] CGColor]];
-            [[oneDayView layer] setBorderWidth:1.0];
+//            [[oneDayView layer] setBorderColor:[[UIColor blackColor] CGColor]];
+//            [[oneDayView layer] setBorderWidth:1.0];
             
             [self addSubview:oneDayView];
             [dayArray addObject:oneDayView];
