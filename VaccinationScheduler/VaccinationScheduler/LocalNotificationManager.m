@@ -34,7 +34,7 @@
     // FIX: for presentation
     //NSDate *declarationDay =[DateFormatter dateFormatWithString:recDay];
     NSDate *declarationDay  = [NSDate date];
-
+    
     // アラート通知する日時
     // FIX: for presentation
     //NSInteger fireTiming = manager.notificationTiming;
@@ -105,7 +105,7 @@
     }
     FUNK();
     NSLog(@"%@",[cal dateFromComponents:comps2].description);
-    return [cal dateFromComponents:comps2]; 
+    return [cal dateFromComponents:comps2];
 }
 
 -(NSString *)createUserInfoKeyWithRecordDay:(NSDate *)recDay appointmentDto:(AccountAppointmentDto *)appointment
@@ -119,15 +119,14 @@
             appointment.vcId,appointment.times];
 }
 
-
-// ローカル通知キャンセル
-- (void)cancelNotificationWithRecordDate:(NSDate *)recDay{
-    // アラート通知をキャンセルする(重複通知対策)
+- (void)cancelNotificationWithAccountId:(NSInteger)accountId
+{
     for (UILocalNotification *notify in [[UIApplication sharedApplication] scheduledLocalNotifications]) {
-        NSInteger keyId = [[notify.userInfo objectForKey:@"NOTIF_KEY"] intValue];
-        if (keyId == 1) {
+        NSString *key = [[[notify userInfo] allKeys] objectAtIndex:0];
+        NSArray *param = [key componentsSeparatedByString:@"_"];
+
+        if([[param objectAtIndex:0]intValue] == accountId){
             [[UIApplication sharedApplication] cancelLocalNotification:notify];
-            break;
         }
     }
 }
@@ -145,6 +144,7 @@
         // アラート通知する日時
         // FIX: for presentation
         //NSInteger fireTiming = manager.notificationTiming;
+        //NSInteger fireTiming = type;
         //NSDate *dateAlert =  [declarationDay initWithTimeInterval:[self calTimeIntercalWithTimingType:fireTiming declarationDay:declarationDay] sinceDate:declarationDay];
         NSDate *dateAlert = [[NSDate date] addTimeInterval:10];
         
@@ -163,6 +163,40 @@
         [[UIApplication sharedApplication] scheduleLocalNotification:newLocalNotification];
         [[UIApplication sharedApplication] cancelLocalNotification:notify];
     }
+}
+-(void)changeNotificationFireDateWithOldAppointmentDto:(AccountAppointmentDto *)oldDto newAppointmentDto:(AccountAppointmentDto *)newDto
+{
+    FUNK();
+    //削除
+    NSString *key = [self createUserInfoKeyWithRecordDay:[self dateFormatWithString:oldDto.appointmentDate] appointmentDto:oldDto];
+    for (UILocalNotification *notify in [[UIApplication sharedApplication] scheduledLocalNotifications]) {
+        if([[[[notify userInfo]allKeys] objectAtIndex:0] isEqualToString:key]){
+            [[UIApplication sharedApplication] cancelLocalNotification:notify];
+            break;
+        }
+    }
+    
+    // アラート通知する日時
+    // FIX: for presentation
+    //NSInteger fireTiming = manager.notificationTiming;
+    //NSDate *dateAlert =  [declarationDay initWithTimeInterval:[self calTimeIntercalWithTimingType:fireTiming declarationDay:declarationDay] sinceDate:declarationDay];
+    NSDate *dateAlert = [[NSDate date] addTimeInterval:10];
+    
+    UILocalNotification *localNotification = [[UILocalNotification alloc] init];
+    // 通知日時を設定
+    [localNotification setFireDate:dateAlert];
+    [localNotification setTimeZone:[NSTimeZone localTimeZone]];
+    [localNotification setSoundName:UILocalNotificationDefaultSoundName];
+    // ボタンの設定
+    [localNotification setAlertAction:@"開く"];
+    // メッセージを設定する
+    
+    AccountInfoDto *accountDto = [manager accountWithId:newDto.accountId];
+    [localNotification setAlertBody:[NSString stringWithFormat:@"%@ちゃんの予防接種の\n予定日が近づいています",accountDto.name]];
+    key = [self createUserInfoKeyWithRecordDay:[self dateFormatWithString:newDto.appointmentDate] appointmentDto:oldDto];
+    [localNotification setUserInfo:[NSDictionary dictionaryWithObject:@"1" forKey:key]];
+    // 登録
+    [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
 }
 
 -(NSDate *)dateFormatWithString:(NSString *)string

@@ -10,7 +10,7 @@
 @class GDataServiceGoogleCalendar;
 @interface SyncGoogleCalendarManager : NSObject
 
--(void)syncGCalWithAccountId:(NSInteger)_accoutId vaccinationName:(NSString *)vName;
+-(void)syncGoogleCalendar;
 
 + (id)sharedManager;
 

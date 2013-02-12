@@ -26,7 +26,7 @@
 -(NSInteger)numberOfAccount;
 
 - (BOOL)googleAccountDataIsExist;
-- (BOOL)saveGoogleAccountDataWithId:(NSString *)gId password:(NSString *)gPass;
+- (void)saveGoogleAccountDataWithId:(NSString *)gId password:(NSString *)gPass;
 - (NSDictionary *)googleAccountData;
 -(void)removeGoogleAccountData;
 

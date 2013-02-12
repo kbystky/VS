@@ -19,6 +19,7 @@
 @interface DetailListViewController ()
 {
     AccountAppointmentDto *appointmentDto;
+    AccountAppointmentDto *oldAppointmentDto;
     VaccinationDto *vaccinationDto;
     NSInteger accountId;
     NSString *vaccinationName;
@@ -129,7 +130,7 @@
         
         self.appointmentDayTextField.text =appointmentDto.appointmentDate;
         self.consultationDayTextField.text =appointmentDto.consultationDate;
-        
+        oldAppointmentDto = appointmentDto;
     }else if (type == TYPE_CREATE){
         //新規予約作成
         //これまでの受診回数を表示
@@ -153,20 +154,26 @@
             [service updateAppointmentWithCurrentAppointmentDto:appointmentDto
                                              newAppointmentDate:self.appointmentDayTextField.text
                                             newConsultationDate:self.consultationDayTextField.text];
+        
             // notification に再登録
-            
+            appointmentDto.appointmentDate = self.appointmentDayTextField.text;
+            appointmentDto.consultationDate = self.consultationDayTextField.text;
+            LocalNotificationManager *manager = [[LocalNotificationManager alloc]init];
+            [manager changeNotificationFireDateWithOldAppointmentDto:oldAppointmentDto newAppointmentDto:appointmentDto];
+
         }else if (type == TYPE_CREATE){
-     
+
+            //登録
             // 一日の受診回数をチェック
             if(![service canSaveAppointmentTimesWithAppointmentDay:self.appointmentDayTextField.text accountId:accountInfoDto.accountId]){
                 [[AlertBuilder createAlertWithType:ALERTTYPE_NOT_SAVE_APPOINTMENT_TIMES] show];
                 return;
             }
-            if(![service checkPeriodFromLastTimeWithVaccinationtDto:vaccinationDto appointmentDay:self.appointmentDayTextField.text accountId:accountInfoDto.accountId]){
+            if(![service isSaveAppointmentSameDayWithAppointmentDay:self.appointmentDayTextField.text accountId:accountInfoDto.accountId] &&
+               ![service checkPeriodFromLastTimeWithVaccinationtDto:vaccinationDto appointmentDay:self.appointmentDayTextField.text accountId:accountInfoDto.accountId]){
                 [[AlertBuilder createAlertWithType:ALERTTYPE_NOT_SAVE_APPOINTMENT_PERIOD] show];
                 return;
             }
-            //登録
             [service saveAppointmentWithAccountId:accountInfoDto.accountId
                                             times:[self.finishTimesLable.text intValue]
                                   appointmentDate:self.appointmentDayTextField.text

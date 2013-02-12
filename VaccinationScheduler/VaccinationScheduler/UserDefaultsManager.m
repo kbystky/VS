@@ -232,16 +232,11 @@ NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
     return gId.length !=0 && gPassword.length !=0;
 }
 
-- (BOOL)saveGoogleAccountDataWithId:(NSString *)gId password:(NSString *)gPass
+- (void)saveGoogleAccountDataWithId:(NSString *)gId password:(NSString *)gPass
 {
     [defaults setObject:gId forKey:KEY_GOOGLE_ID];
     [defaults setObject:gPass forKey:KEY_GOOGLE_PASS];
-    BOOL successful = [defaults synchronize];
-    if (successful) {
-        return YES;
-    }else{
-        return NO;
-    }
+    [defaults synchronize];
 }
 
 - (NSDictionary *)googleAccountData
@@ -259,6 +254,7 @@ NSString *const KEY_NOTIFICATION_TIMING_TYPE =@"notification_type";
 {
     [defaults removeObjectForKey:KEY_GOOGLE_ID];
     [defaults removeObjectForKey:KEY_GOOGLE_PASS];
+    [defaults synchronize];
 }
 
 #pragma mark - ****** Notification setting ******

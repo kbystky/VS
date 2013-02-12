@@ -89,7 +89,8 @@
     return appointments;
 }
 
--(BOOL)saveAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto{
+-(BOOL)saveAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto
+{
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];
     
@@ -113,7 +114,8 @@
     return result;
 }
 
--(BOOL)updateAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto{
+-(BOOL)updateAppointmentWithAccountAppointmentDto:(AccountAppointmentDto *)dto
+{
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     [db open];
     FUNK();[self Logger:dto];
@@ -121,15 +123,52 @@
     if([dto.consultationDate isEqual:nil]){
         dto.consultationDate = @"nodata";
     }
-    NSString *sql = @"UPDATE appointment SET appointmentDate = ? , consultationDate = ? WHERE id = ?";
+    NSString *sql = @"UPDATE appointment SET accountId = ? , vaccinationId = ? , times = ? , appointmentDate = ? , consultationDate = ? , isSynced = ? WHERE id = ?";
     BOOL result = [db executeUpdate:sql,
-                   [dto appointmentDate],
-                   [dto consultationDate],
+                   [NSNumber numberWithInt:dto.accountId],
+                   [NSNumber numberWithInt:dto.vcId],
+                   [NSNumber numberWithInt:dto.times],
+                   dto.appointmentDate,
+                   dto.consultationDate,
+                   [NSNumber numberWithBool:dto.isSynced],
                    [NSNumber numberWithInt:dto.apId]];
     
     NSLog(@"result %d",result);
     [db close];
     return result;
+}
+
+-(BOOL)updateAppointmentWithAccountAppointmentsDto:(NSArray *)appointments
+{
+    FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
+    [db open];
+
+    [db beginTransaction];
+    
+    BOOL isSucceeded = YES;
+    NSString *sql = @"UPDATE appointment SET accountId = ? , vaccinationId = ? , times = ? , appointmentDate = ? , consultationDate = ? , isSynced = ? WHERE id = ?";
+    for(AccountAppointmentDto* dto in appointments){
+        if(![db executeUpdate:sql,
+             [NSNumber numberWithInt:dto.accountId],
+             [NSNumber numberWithInt:dto.vcId],
+             [NSNumber numberWithInt:dto.times],
+             dto.appointmentDate,
+             dto.consultationDate,
+             [NSNumber numberWithBool:dto.isSynced],
+             [NSNumber numberWithInt:dto.apId]]){
+            isSucceeded = NO;
+            break;
+        }
+    }
+    
+    if(isSucceeded){
+        [db commit];
+    }else{
+        [db rollback];
+    }
+
+    [db close];
+    return isSucceeded;
 }
 
 

@@ -14,6 +14,7 @@
 #import "DateFormatter.h"
 #import "AccountInfoDto.h"
 #import "AccountAppointmentService.h"
+#import "LocalNotificationManager.h"
 
 @interface AccountViewController ()
 {
@@ -200,19 +201,14 @@
         //アカウント削除
         [manager removeAccount:self.accountInfoDto];
 
+        // 予約データ削除
         AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
         [service removeAppointmentWithAccountId:self.accountInfoDto.accountId];
         
-//        AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
-        //
-        //        NSDictionary *account  =      [self.accountInfoDto objectForKey:self.nameTextFiled.text] ;
-        //        NSInteger accountId = [[account objectForKey:KEY_ID] intValue];
-        //        [dao deleteWithAccountId:accountId];
-        
-//        [dao deleteWithAccountId:self.accountInfoDto.accountId];
-        
-        //[[UserDefaultsManager alloc]init] accountWithName:[self.accountInfo objectForKey:self.nameTextFiled.text] objectForKey:[UserDefaultsManager KEY_ID_INT]intValue]
-        //delegateメソッドを呼ぶ
+        // notificationキャンセル
+        LocalNotificationManager *notificationManager = [[LocalNotificationManager alloc]init];
+        [notificationManager cancelNotificationWithAccountId:self.accountInfoDto.accountId];
+
         [self.delegate dismissAccountViewController:self];
     }
 }

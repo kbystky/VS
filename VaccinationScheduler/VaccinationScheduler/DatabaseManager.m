@@ -15,8 +15,6 @@
     NSArray *paths = NSSearchPathForDirectoriesInDomains( NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *dir= [paths objectAtIndex:0];
     NSString *databasePath = [dir stringByAppendingPathComponent:dbName];
-    FUNK();
-//    NSLog(@"%@\n%@",paths,databasePath);
     return [[FMDatabase alloc] initWithPath:databasePath];
 }
 
@@ -52,18 +50,16 @@
 
 + (void)createNewTable
 {
+/*
     FMDatabase *db =  [DatabaseManager createInstanceWithDbName:@"vaccinationScheduler.db"];
     
     [db open];
     NSString * sql;
     sql = @"CREATE TABLE IF NOT EXISTS appointment (id INTEGER PRIMARY KEY AUTOINCREMENT ,accountId INTEGER , vaccinationId INTEGER , times INTEGER , appointmentDate TEXT , consultationDate TEXT , isSynced BOOL);";
-    NSLog(@"/**************/");
     NSLog(@"create %d",[db executeUpdate:sql]);
-    NSLog(@"/**************/");
-    
-
+*/
+/*
     // initialize vc table
-  //  /*
      sql = @"CREATE TABLE IF NOT EXISTS  vaccination ( id INTEGER PRIMARY KEY AUTOINCREMENT , name TEXT, needTimes INTEGER , period INTEGER);";
      NSLog(@"create %d",[db executeUpdate:sql]);
      sql = @"INSERT INTO vaccination (name , needTimes , period) VALUES (?,?,?);";
@@ -78,7 +74,7 @@
      [db executeUpdate:sql,@"おたふくかぜワクチン",[NSNumber numberWithInt:2],[NSNumber numberWithInt:60]];
      [db executeUpdate:sql,@"水痘ワクチン",[NSNumber numberWithInt:2],[NSNumber numberWithInt:60]];
      [db executeUpdate:sql,@"インフルエンザワクチン",[NSNumber numberWithInt:2],[NSNumber numberWithInt:60]];
-//     */
     [db close];
+ */
 }
 @end

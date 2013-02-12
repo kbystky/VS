@@ -68,6 +68,20 @@ AccountAppointmentDao *dao = nil;
 {
     return [dao allAppointmentsData];
 }
+
+- (NSArray *)notSyncAppointmentsData
+{
+    NSMutableArray *result = [[NSMutableArray alloc]init];
+    NSArray *appointments = [dao allAppointmentsData];
+    for(AccountAppointmentDto *dto in appointments){
+        if(dto.isSynced == NO){
+            [result addObject:[dto mutableCopy]];
+        }
+    }
+    
+    return result;
+}
+
 - (void)Logger:(AccountAppointmentDto *)dto
 {
     FUNK();
@@ -109,7 +123,6 @@ AccountAppointmentDao *dao = nil;
     //その予約が最新か確認する
     //最新でなかったら以降の予約も削除が必要
     //全予約取得
-    AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
     NSArray *appointments = [dao allAppointmentsData];
     NSMutableArray *targetAppointments = [[NSMutableArray alloc]init];
     NSMutableArray *deleteAppointments = [[NSMutableArray alloc]init];
@@ -148,7 +161,6 @@ AccountAppointmentDao *dao = nil;
 - (BOOL)canSaveAppointmentTimesWithAppointmentDay:(NSString *)appointmentDay accountId:(NSInteger)accountId
 {
     // Daoから全Appointmentを取得
-    AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
     NSArray *appointments = [dao allAppointmentsData];
     int times = 0;
     for(AccountAppointmentDto *dto in appointments){
@@ -162,11 +174,24 @@ AccountAppointmentDao *dao = nil;
     return YES;
 }
 
+//一日の接種可能数は大丈夫か？
+- (BOOL)isSaveAppointmentSameDayWithAppointmentDay:(NSString *)appointmentDay accountId:(NSInteger)accountId
+{
+    // Daoから全Appointmentを取得
+    NSArray *appointments = [dao allAppointmentsData];
+
+    for(AccountAppointmentDto *dto in appointments){
+        if(dto.accountId == accountId && [dto.appointmentDate isEqualToString:appointmentDay]){
+            return YES;
+        }
+    }
+    return NO;
+}
+
 //期間のちぇっく
 - (BOOL)checkPeriodFromLastTimeWithVaccinationtDto:(VaccinationDto *)vaccinationDto appointmentDay:(NSString *)appointmentDay accountId:(NSInteger)accountId
 {
     // Daoから全Appointmentを取得
-    AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
     NSArray *appointments = [dao allAppointmentsData];
     
     NSString *newestAppointmentDay = nil;
@@ -219,7 +244,15 @@ AccountAppointmentDao *dao = nil;
     NSLog(@"/********NO");
     return NO;
 }
-
+/** for Gcalendar **/
+- (void)syncCompleteWithAppointments:(NSArray *)appointments
+{
+    for(AccountAppointmentDto *dto in appointments){
+        dto.isSynced = YES;
+    }
+    
+    [dao updateAppointmentWithAccountAppointmentsDto:appointments];
+}
 /** for calendar **/
 - (NSArray *)monthDataWithStartYMD:(NSString *)startYmd endYM:(NSString *)endYmd
 {
@@ -232,7 +265,6 @@ AccountAppointmentDao *dao = nil;
     NSDate *endDate = [DateFormatter dateFormatWithString:endYmd];
     
     // Daoから全Appointmentを取得
-    AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
     NSArray *appointments = [dao allAppointmentsData];
     
     // 各Appointmentの日付をNSDAteに変換・比較

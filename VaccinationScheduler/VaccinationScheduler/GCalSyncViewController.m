@@ -173,9 +173,8 @@ enum {
             //errorはハンドリングして
             //戻ってきます
             SyncGoogleCalendarManager *syncGCalManager = [SyncGoogleCalendarManager sharedManager];
-            [syncGCalManager syncGCalWithAccountId:1 vaccinationName:@"test"];
-//            SyncGoogleCalendarManager *syncGCalManager = [[SyncGoogleCalendarManager alloc]init];
-//            [syncGCalManager syncGCalWithAccountId:1 vaccinationName:@"test"];
+            [syncGCalManager syncGoogleCalendar];
+
         }else{
             UIAlertView *alert = [AlertBuilder createAlertWithType:ALERTTYPE_DEMAND_FILLACCOUNTINFO];
             [alert show];
