@@ -13,6 +13,9 @@
 #import "DatabaseManager.h"
 #import "UserDefaultsManager.h"
 #import "StringConst.h"
+#import "VaccinationService.h"
+#import "VaccinationDto.h"
+
 #define DBNAME @"appointment"
 
 @implementation AccountAppointmentDao
@@ -71,8 +74,18 @@
         dto.isSynced = [results boolForColumnIndex:6];
         [appointments addObject:dto];
     }
-    
     [db close];
+    
+    // set vaccinationDto
+    NSArray *vaccinations = [VaccinationService vaccinationData];
+    for(AccountAppointmentDto *aDto in appointments){
+        for(VaccinationDto *vDto in vaccinations){
+            if(aDto.vcId == vDto.vcId){
+                aDto.vaccinationDto = vDto;
+                break;
+            }
+        }
+    }
     return appointments;
 }
 

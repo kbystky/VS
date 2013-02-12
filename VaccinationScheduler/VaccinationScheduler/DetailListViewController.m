@@ -156,6 +156,16 @@
             // notification に再登録
             
         }else if (type == TYPE_CREATE){
+     
+            // 一日の受診回数をチェック
+            if(![service canSaveAppointmentTimesWithAppointmentDay:self.appointmentDayTextField.text accountId:accountInfoDto.accountId]){
+                [[AlertBuilder createAlertWithType:ALERTTYPE_NOT_SAVE_APPOINTMENT_TIMES] show];
+                return;
+            }
+            if(![service checkPeriodFromLastTimeWithVaccinationtDto:vaccinationDto appointmentDay:self.appointmentDayTextField.text accountId:accountInfoDto.accountId]){
+                [[AlertBuilder createAlertWithType:ALERTTYPE_NOT_SAVE_APPOINTMENT_PERIOD] show];
+                return;
+            }
             //登録
             [service saveAppointmentWithAccountId:accountInfoDto.accountId
                                             times:[self.finishTimesLable.text intValue]
@@ -169,11 +179,11 @@
             saveAppointmentDto.times = [self.finishTimesLable.text intValue];
             saveAppointmentDto.appointmentDate= self.appointmentDayTextField.text;
             saveAppointmentDto.vcId = vaccinationDto.vcId;
-
+            
             LocalNotificationManager *manager = [[LocalNotificationManager alloc]init];
             [manager createNotificationWithRecordDate:self.appointmentDayTextField.text appointmentDto:saveAppointmentDto];
         }
-        
+
         [self.navigationController popViewControllerAnimated:YES];
         return;
     }else{
@@ -264,11 +274,13 @@
 }
 -(void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
+    FUNK();
     if(alertView.tag == ALERTTYPE_DELETE_APPOINTMENT && buttonIndex == BUTTON_INDEX_OK){
         AccountAppointmentService *service = [[AccountAppointmentService alloc]init];
         [service removeAppointmentWithAppointmentDto:appointmentDto];
         
         [self.navigationController popViewControllerAnimated:YES];
+        return;
     }
 }
 #pragma mark *****************  other ******************

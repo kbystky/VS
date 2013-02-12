@@ -17,7 +17,8 @@
 - (void)updateAppointmentWithCurrentAppointmentDto:(AccountAppointmentDto *)dto newAppointmentDate:(NSString *)appointmentDate  newConsultationDate:(NSString *)consultationDate;
 - (void)removeAppointmentWithAppointmentDto:(AccountAppointmentDto *)dto;
 - (void)removeAppointmentWithAccountId:(NSInteger)accountId;
-
+- (BOOL)canSaveAppointmentTimesWithAppointmentDay:(NSString *)appointmentDay accountId:(NSInteger)accountId;
+- (BOOL)checkPeriodFromLastTimeWithVaccinationtDto:(VaccinationDto *)vaccinationDto appointmentDay:(NSString *)appointmentDay accountId:(NSInteger)accountId;
 // for cal
 - (NSArray *)monthDataWithStartYMD:(NSString *)startYmd endYM:(NSString *)endYmd;
 @end

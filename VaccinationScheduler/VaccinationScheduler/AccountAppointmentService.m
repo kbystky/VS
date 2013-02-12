@@ -143,6 +143,82 @@ AccountAppointmentDao *dao = nil;
 {
     [dao removeAppointmentsWithAccoutId:accountId];
 }
+/** check **/
+//一日の接種可能数は大丈夫か？
+- (BOOL)canSaveAppointmentTimesWithAppointmentDay:(NSString *)appointmentDay accountId:(NSInteger)accountId
+{
+    // Daoから全Appointmentを取得
+    AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
+    NSArray *appointments = [dao allAppointmentsData];
+    int times = 0;
+    for(AccountAppointmentDto *dto in appointments){
+        if(dto.accountId == accountId && [dto.appointmentDate isEqualToString:appointmentDay]){
+            times++;
+        }
+    }
+    if(times == 2){
+        return NO;
+    }
+    return YES;
+}
+
+//期間のちぇっく
+- (BOOL)checkPeriodFromLastTimeWithVaccinationtDto:(VaccinationDto *)vaccinationDto appointmentDay:(NSString *)appointmentDay accountId:(NSInteger)accountId
+{
+    // Daoから全Appointmentを取得
+    AccountAppointmentDao *dao = [[AccountAppointmentDao alloc]init];
+    NSArray *appointments = [dao allAppointmentsData];
+    
+    NSString *newestAppointmentDay = nil;
+    VaccinationDto *newestVaccinationDto = nil;
+
+    //最新の登録情報を取得
+    for(AccountAppointmentDto *dto in appointments){
+        if(dto.accountId != accountId){
+            continue;
+        }
+        if(newestAppointmentDay == nil){
+            newestAppointmentDay = dto.appointmentDate;
+            newestVaccinationDto = dto.vaccinationDto;
+            continue;
+        }
+        NSLog(@"/*************** dto %@",dto.appointmentDate);
+        NSLog(@"/*************** new vc id %d  day %@",newestVaccinationDto.vcId,newestAppointmentDay);
+        NSComparisonResult result = [newestAppointmentDay compare : dto.appointmentDate];
+        //日付が一緒 && 現在のvcDtoより必要待機期間が長かったら更新
+        if(result ==NSOrderedSame && newestVaccinationDto.period < dto.vaccinationDto.period){
+            NSLog(@"/************ 待機時間更新");
+                newestVaccinationDto = dto.vaccinationDto;
+                continue;
+        }
+        if(result == NSOrderedAscending){
+            NSLog(@"/************ こうしん");
+            newestAppointmentDay = dto.appointmentDate;
+            newestVaccinationDto = dto.vaccinationDto;
+        }
+    }
+    NSLog(@"/*************** vc id %d %@",newestVaccinationDto.vcId,newestAppointmentDay);
+    //vaccinationから期間を取得
+    //最新の日数から期間分離れているかどうか
+    return [self checkDateRangeWithNewestDay:newestAppointmentDay targetDay:appointmentDay period:newestVaccinationDto.period];
+}
+
+//期間チェック用
+-(BOOL)checkDateRangeWithNewestDay:(NSString *)newestDay targetDay:(NSString *)targetDay period:(NSInteger)period
+{
+    NSDateFormatter *inputDateFormatter = [[NSDateFormatter alloc] init];
+	[inputDateFormatter setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
+	NSDate *newestDate = [inputDateFormatter dateFromString:[NSString stringWithFormat:@"%@ 00:00:00",newestDay]];
+	NSDate *targetDate = [inputDateFormatter dateFromString:[NSString stringWithFormat:@"%@ 00:00:00",targetDay]];
+	NSTimeInterval since = [newestDate timeIntervalSinceDate:targetDate];
+    NSLog(@"/************** since %f  period %d sabun %d",since/(24*60*60),period,period + (int)since/(24*60*60));
+    if(period + (int)(since/(24*60*60)) == 0){
+        NSLog(@"/********OK");
+        return YES;
+    }
+    NSLog(@"/********NO");
+    return NO;
+}
 
 /** for calendar **/
 - (NSArray *)monthDataWithStartYMD:(NSString *)startYmd endYM:(NSString *)endYmd
