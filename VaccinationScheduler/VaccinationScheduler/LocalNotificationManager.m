@@ -147,7 +147,7 @@
         //NSInteger fireTiming = type;
         //NSDate *dateAlert =  [declarationDay initWithTimeInterval:[self calTimeIntercalWithTimingType:fireTiming declarationDay:declarationDay] sinceDate:declarationDay];
         NSDate *dateAlert = [[NSDate date] addTimeInterval:10];
-        
+        NSLog(@"/********%@",dateAlert);
         // 通知日時を設定
         UILocalNotification *newLocalNotification = [[UILocalNotification alloc] init];
         [newLocalNotification setFireDate:dateAlert];

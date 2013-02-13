@@ -56,6 +56,7 @@ static GDataServiceGoogleCalendar *service = nil;
 /** 登録するカレンダーのURLを取得する**/
 -(void)syncGoogleCalendar
 {
+    NSLog(@"check");
     [SVProgressHUD showWithStatus:@"同期中です" maskType:SVProgressHUDMaskTypeGradient];
    
     if(![self createAppointmentsData]){

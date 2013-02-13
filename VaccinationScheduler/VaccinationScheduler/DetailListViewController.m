@@ -169,6 +169,7 @@
                 [[AlertBuilder createAlertWithType:ALERTTYPE_NOT_SAVE_APPOINTMENT_TIMES] show];
                 return;
             }
+            NSLog(@"%d %d",[service isSaveAppointmentSameDayWithAppointmentDay:self.appointmentDayTextField.text accountId:accountInfoDto.accountId],[service checkPeriodFromLastTimeWithVaccinationtDto:vaccinationDto appointmentDay:self.appointmentDayTextField.text accountId:accountInfoDto.accountId]);
             if(![service isSaveAppointmentSameDayWithAppointmentDay:self.appointmentDayTextField.text accountId:accountInfoDto.accountId] &&
                ![service checkPeriodFromLastTimeWithVaccinationtDto:vaccinationDto appointmentDay:self.appointmentDayTextField.text accountId:accountInfoDto.accountId]){
                 [[AlertBuilder createAlertWithType:ALERTTYPE_NOT_SAVE_APPOINTMENT_PERIOD] show];

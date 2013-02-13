@@ -24,7 +24,6 @@
 }
 @property(nonatomic)NSInteger previousViewControllerType;
 @property(nonatomic)NSInteger editType;
-//@property(strong,nonatomic)NSDictionary *accountInfo;
 @property(strong,nonatomic)AccountInfoDto *accountInfoDto;
 @property (strong, nonatomic) IBOutlet UILabel *nameText;
 @property (strong, nonatomic) IBOutlet UILabel *birthDayText;
@@ -66,7 +65,6 @@
     return self;
 }
 
-//TODO:編集の時は最初からtextFieldに値を入れる
 #pragma mark ************  Life Cycle *************
 - (void)viewDidLoad
 {
@@ -95,7 +93,7 @@
 {
     return (interfaceOrientation == UIInterfaceOrientationPortrait);
 }
-//TODO: 新規作成と編集の処理を分ける必要あり
+
 #pragma mark *****************  View Setting ******************
 - (void)viewSetting
 {

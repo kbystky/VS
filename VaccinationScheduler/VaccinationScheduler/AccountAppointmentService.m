@@ -75,7 +75,7 @@ AccountAppointmentDao *dao = nil;
     NSArray *appointments = [dao allAppointmentsData];
     for(AccountAppointmentDto *dto in appointments){
         if(dto.isSynced == NO){
-            [result addObject:[dto mutableCopy]];
+            [result addObject:dto];
         }
     }
     
@@ -231,11 +231,19 @@ AccountAppointmentDao *dao = nil;
 //期間チェック用
 -(BOOL)checkDateRangeWithNewestDay:(NSString *)newestDay targetDay:(NSString *)targetDay period:(NSInteger)period
 {
+
     NSDateFormatter *inputDateFormatter = [[NSDateFormatter alloc] init];
 	[inputDateFormatter setDateFormat:@"yyyy/MM/dd HH:mm:ss"];
-	NSDate *newestDate = [inputDateFormatter dateFromString:[NSString stringWithFormat:@"%@ 00:00:00",newestDay]];
+
+    NSDate *newestDate = [inputDateFormatter dateFromString:[NSString stringWithFormat:@"%@ 00:00:00",newestDay]];
 	NSDate *targetDate = [inputDateFormatter dateFromString:[NSString stringWithFormat:@"%@ 00:00:00",targetDay]];
+
+    newestDate = [newestDate initWithTimeInterval:[[NSTimeZone systemTimeZone] secondsFromGMT] sinceDate:newestDate];
+    targetDate = [targetDate initWithTimeInterval:[[NSTimeZone systemTimeZone] secondsFromGMT] sinceDate:targetDate];
 	NSTimeInterval since = [newestDate timeIntervalSinceDate:targetDate];
+
+    NSLog(@"/*************  str %@  ::target %@",newestDay,targetDay);
+    NSLog(@"/************* date %@  ::target %@",newestDate,targetDate);
     NSLog(@"/************** since %f  period %d sabun %d",since/(24*60*60),period,period + (int)since/(24*60*60));
     if(period + (int)(since/(24*60*60)) == 0){
         NSLog(@"/********OK");
@@ -315,11 +323,5 @@ AccountAppointmentDao *dao = nil;
     }
     return YES;
 }
-
-
-
-
-
-
 
 @end

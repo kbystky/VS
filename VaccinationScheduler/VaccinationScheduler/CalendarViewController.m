@@ -8,18 +8,14 @@
 
 #import "AppDelegate.h"
 #import "CalendarViewController.h"
-
 #import "Calendar.h"
 #import "CalendarView.h"
-
 #import "AccountAppointmentService.h"
 #import "UserDefaultsManager.h"
-
 #import "AccountAppointmentDto.h"
 #import "VaccinationDto.h"
 #import "AccountInfoDto.h"
 #import "VaccinationDto.h"
-
 #import "DetailListViewController.h"
 
 #define CellIdentifier @"myCell"
@@ -206,7 +202,7 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
     [cal gotoPrev];
     [self calShow];
 }
-/***************************************************/
+
 #pragma mark ************  Delegate *************
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -218,12 +214,17 @@ NSString *const CALENDARVIEW_NIB_NAME =@"CalendarView";
 {
     UITableViewCell *cell = [_tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        //cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleValue1 reuseIdentifier:CellIdentifier];
     }
-    AccountAppointmentDto *d = (AccountAppointmentDto *)[dataSource objectAtIndex:indexPath.row];
-    cell.textLabel.text = d.vaccinationDto.name;
-    //    cell.textLabel.text = [NSString stringWithFormat:@"%d",indexPath.row];
+    AccountAppointmentDto *appointmentDto = (AccountAppointmentDto *)[dataSource objectAtIndex:indexPath.row];
+    UserDefaultsManager *manager = [[UserDefaultsManager alloc]init];
+    AccountInfoDto *accountDto = [manager accountWithId:appointmentDto.accountId];
+
     
+    cell.textLabel.text = accountDto.name;
+    cell.detailTextLabel.text = [NSString stringWithFormat:@"%@(%@)",appointmentDto.vaccinationDto.name,appointmentDto.appointmentDate];
+    cell.detailTextLabel.font = [UIFont fontWithName:@"AppleGothic" size:12];
     return cell;
     
 }
